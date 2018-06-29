@@ -12,6 +12,6 @@ import retrofit2.http.Query;
 
 public interface NewsService {
 
-    @GET("top-headlines?country=sk")
+    @GET("top-headlines?country=us")
     Call<ArticleList> getResponse(@Query("apiKey") String apiKey);
 }

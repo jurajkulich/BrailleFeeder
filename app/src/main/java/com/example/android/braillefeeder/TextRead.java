@@ -22,9 +22,11 @@ public class TextRead {
     }
 
     public void speakText(Article article) {
-        if( !article.getDescription().isEmpty()) {
-            mTextToSpeech.speak(article.getDescription(), TextToSpeech.QUEUE_ADD, null, UTTERANCE_ID);
-            Log.e("AA", article.getDescription());
+        if( article.getDescription() != null) {
+            if (!article.getDescription().isEmpty()) {
+                mTextToSpeech.speak(article.getDescription(), TextToSpeech.QUEUE_ADD, null, UTTERANCE_ID);
+                Log.e("AA", article.getDescription());
+            }
         }
     }
 }
