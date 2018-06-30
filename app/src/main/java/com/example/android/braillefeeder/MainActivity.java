@@ -1,53 +1,54 @@
 package com.example.android.braillefeeder;
 
+import android.Manifest;
 import android.app.Activity;
-import android.app.usage.NetworkStats;
-import android.content.ActivityNotFoundException;
-import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.media.AudioManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.speech.RecognizerIntent;
 import android.speech.tts.TextToSpeech;
+import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.android.braillefeeder.data.ApiUtils;
 import com.example.android.braillefeeder.data.Article;
 import com.example.android.braillefeeder.data.ArticleList;
 import com.example.android.braillefeeder.data.remote.NewsService;
-import com.google.api.gax.paging.Page;
-import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.speech.v1.RecognitionAudio;
 import com.google.cloud.speech.v1.RecognitionConfig;
 import com.google.cloud.speech.v1.RecognizeResponse;
 import com.google.cloud.speech.v1.SpeechClient;
 import com.google.cloud.speech.v1.SpeechRecognitionAlternative;
 import com.google.cloud.speech.v1.SpeechRecognitionResult;
-import com.google.common.collect.Lists;
 import com.google.protobuf.ByteString;
 
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-import io.grpc.Context;
+import edu.cmu.pocketsphinx.Hypothesis;
+import edu.cmu.pocketsphinx.RecognitionListener;
+import edu.cmu.pocketsphinx.SpeechRecognizer;
+import edu.cmu.pocketsphinx.SpeechRecognizerSetup;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-import static android.content.ContentValues.TAG;
 
+public class MainActivity extends Activity implements PocketSphinxSTT.PocketSphinxListener{
 
-public class MainActivity extends Activity {
+    private static final String HEY_BRAILLE_CONTEXT = "HEY_BRAILLE_CONTEXT";
+
+    private static final int PERMISSIONS_REQUEST_RECORD_AUDIO = 1;
 
     private List<Article> mArticleList;
 
@@ -63,13 +64,20 @@ public class MainActivity extends Activity {
 
     private int i;
 
+    private PocketSphinxSTT mPocketSphinxSTT;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        AudioManager audioManager = (AudioManager) getSystemService(AUDIO_SERVICE);
-        audioManager.setStreamVolume(AudioManager.STREAM_MUSIC,audioManager.getStreamVolume(AudioManager.STREAM_MUSIC), 0);
+        int permissionCheck = ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.RECORD_AUDIO);
+        if (permissionCheck != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.RECORD_AUDIO}, PERMISSIONS_REQUEST_RECORD_AUDIO);
+            return;
+        }
+
+        mPocketSphinxSTT = new PocketSphinxSTT(this, this);
 
         mButton = findViewById(R.id.button);
         mTextView = findViewById(R.id.textview);
@@ -84,8 +92,6 @@ public class MainActivity extends Activity {
                     if( i < 20) {
                         mTextRead.speakText(mArticleList.get(i));
                     }
-                    // startSpeechToTextActivity();
-                    new RecognizeTextAsyncTask().execute();
                 } else {
                     loadAnswers();
                 }
@@ -102,6 +108,22 @@ public class MainActivity extends Activity {
 
         Log.e("URL: ", mNewsService.getResponse(api).request().toString());
         loadAnswers();
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           @NonNull String[] permissions, @NonNull  int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if (requestCode == PERMISSIONS_REQUEST_RECORD_AUDIO) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                // Recognizer initialization is a time-consuming and it involves IO,
+                // so we execute it in async task
+                mPocketSphinxSTT = new PocketSphinxSTT(this, this);
+            } else {
+                finish();
+            }
+        }
     }
 
     public void loadAnswers() {
@@ -125,6 +147,33 @@ public class MainActivity extends Activity {
             }
         });
     }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        mPocketSphinxSTT.onDestroy();
+    }
+
+    @Override
+    public void onSpeechRecognizerReady() {
+        mPocketSphinxSTT.startListeningToActivationPhrase();
+    }
+
+    @Override
+    public void onActivationPhraseDetected() {
+        mPocketSphinxSTT.startListeningToAction();
+    }
+
+    @Override
+    public void onTextRecognized(String recognizedText) {
+        Log.d("onTextRecognized", recognizedText);
+    }
+
+    @Override
+    public void onTimeout() {
+        mPocketSphinxSTT.startListeningToActivationPhrase();
+    }
+
     /*
     static void authExplicit(String jsonPath) throws IOException {
         GoogleCredentials credentials = GoogleCredentials.fromStream(new FileInputStream(jsonPath))
@@ -138,7 +187,7 @@ public class MainActivity extends Activity {
             System.out.println(bucket.toString());
         }
     }
-    */
+
 
     private class RecognizeTextAsyncTask extends AsyncTask<Void, Void, List<SpeechRecognitionResult>> {
 
@@ -193,6 +242,7 @@ public class MainActivity extends Activity {
     public void startSpeechToTextActivity() {
 
     }
+    */
 }
 
 
