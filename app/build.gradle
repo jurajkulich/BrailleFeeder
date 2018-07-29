@@ -1,4 +1,5 @@
 apply plugin: 'com.android.application'
+apply plugin: 'com.google.protobuf'
 
 android {
     compileSdkVersion 26
@@ -21,19 +22,31 @@ android {
     }
 }
 
+ext {
+    grpcVersion = '1.13.1'
+}
+
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
+
+    // Support
+    implementation 'com.android.support:support-v4:26.0.1'
     implementation 'com.android.support.constraint:constraint-layout:1.0.2'
+
+    // Tests
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.1'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.1'
+
+    // Android things
     compileOnly 'com.google.android.things:androidthings:+'
-    implementation 'com.android.support:support-v4:26.0.0'
-    compile 'com.squareup.okhttp3:okhttp:3.10.0'
+
+
+    implementation 'com.squareup.okhttp3:okhttp:3.10.0'
 
     implementation 'com.squareup.retrofit2:retrofit:2.4.0'
-    compile 'com.squareup.retrofit2:converter-gson:2.4.0'
-    compile 'com.google.code.gson:gson:2.8.2'
+    implementation 'com.squareup.retrofit2:converter-gson:2.4.0'
+    implementation 'com.google.code.gson:gson:2.8.2'
 
 
     implementation project(':aars')
@@ -41,6 +54,35 @@ dependencies {
 
 
     implementation 'com.google.cloud:google-cloud-speech:0.49.0-alpha'
+
+    implementation "io.grpc:grpc-okhttp:$grpcVersion"
+    implementation "io.grpc:grpc-protobuf-lite:$grpcVersion"
+    implementation "io.grpc:grpc-stub:$grpcVersion"
+
+//    implementation 'javax.annotation:javax.annotation-api:1.2'
+    protobuf 'com.google.protobuf:protobuf-java:3.5.1'
 }
 
-
+protobuf {
+    protoc {
+        artifact = 'com.google.protobuf:protoc:3.3.0'
+    }
+    plugins {
+        javalite {
+            artifact = "com.google.protobuf:protoc-gen-javalite:3.0.0"
+        }
+        grpc {
+            artifact = "io.grpc:protoc-gen-grpc-java:${grpcVersion}"
+        }
+    }
+    generateProtoTasks {
+        all().each {
+            task -> task.plugins {
+                javalite {}
+                grpc {
+                    option 'lite'
+                }
+            }
+        }
+    }
+}

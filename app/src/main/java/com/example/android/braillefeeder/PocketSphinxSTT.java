@@ -33,7 +33,7 @@ public class PocketSphinxSTT extends Activity implements RecognitionListener {
 
     private static final String TAG = PocketSphinxSTT.class.getSimpleName();
 
-    private static final String ACTIVATION_PHRASE = "ok man";
+    private static final String ACTIVATION_PHRASE = "dog man";
     private static final String WAKEUP_SEARCH = "wakeup";
     private static final String ACTION_SEARCH = "action";
 
