@@ -61,6 +61,10 @@ dependencies {
 
 //    implementation 'javax.annotation:javax.annotation-api:1.2'
     protobuf 'com.google.protobuf:protobuf-java:3.5.1'
+
+    implementation('com.google.auth:google-auth-library-oauth2-http:0.10.0') {
+        exclude module: 'httpclient'
+    }
 }
 
 protobuf {
