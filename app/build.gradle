@@ -24,6 +24,7 @@ android {
     packagingOptions {
         exclude 'META-INF/INDEX.LIST'
     }
+    /*
     sourceSets {
         main {
             proto {
@@ -37,6 +38,7 @@ android {
 
         }
     }
+    */
 }
 
 ext {
@@ -95,13 +97,11 @@ dependencies {
     implementation project(':models')
 
 
-    implementation ('com.google.cloud:google-cloud-speech:0.56.0-beta')
+//    implementation ('com.google.cloud:google-cloud-speech:0.56.0-beta')
 
 
     implementation "io.grpc:grpc-okhttp:$grpcVersion"
-    implementation ("io.grpc:grpc-protobuf-lite:$grpcVersion")  {
-        exclude group: 'com.google.protobuf'
-    }
+    implementation ("io.grpc:grpc-protobuf-lite:$grpcVersion")
     implementation "io.grpc:grpc-stub:$grpcVersion"
     implementation 'javax.annotation:javax.annotation-api:1.2'
 

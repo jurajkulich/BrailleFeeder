@@ -1,11 +1,4 @@
 cmudict-en-us.dict
-cmudict/LICENSE
-cmudict/README
-cmudict/README.developer
-cmudict/cmudict.dict
-cmudict/cmudict.phones
-cmudict/cmudict.symbols
-cmudict/cmudict.vp
 en-us-ptm/README
 en-us-ptm/feat.params
 en-us-ptm/mdef

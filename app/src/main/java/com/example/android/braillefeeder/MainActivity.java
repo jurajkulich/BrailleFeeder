@@ -247,7 +247,9 @@ public class MainActivity extends Activity implements PocketSphinxSTT.PocketSphi
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        mTextRead.shutDownSpeaker();
+        if( mTextRead != null) {
+            mTextRead.shutDownSpeaker();
+        }
 //        mPocketSphinxSTT.onDestroy();
     }
 

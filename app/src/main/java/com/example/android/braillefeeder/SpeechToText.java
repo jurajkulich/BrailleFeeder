@@ -15,9 +15,7 @@ import android.util.Log;
 import com.google.auth.Credentials;
 import com.google.auth.oauth2.AccessToken;
 import com.google.auth.oauth2.GoogleCredentials;
-import com.google.cloud.speech.v1.RecognitionAudio;
 import com.google.cloud.speech.v1.RecognitionConfig;
-import com.google.cloud.speech.v1.RecognizeRequest;
 import com.google.cloud.speech.v1.SpeechGrpc;
 import com.google.cloud.speech.v1.SpeechRecognitionAlternative;
 import com.google.cloud.speech.v1.StreamingRecognitionConfig;
@@ -88,7 +86,7 @@ public class SpeechToText extends Service {
             = new StreamObserver<StreamingRecognizeResponse>() {
         @Override
         public void onNext(StreamingRecognizeResponse value) {
-            Log.d("StreamObserver", "onNext" + value.toString());
+            Log.d("StreamObserver", "onNext" );
             String text = null;
             boolean isFinal = false;
 
