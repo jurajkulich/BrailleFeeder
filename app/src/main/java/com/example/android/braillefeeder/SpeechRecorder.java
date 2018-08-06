@@ -146,7 +146,7 @@ public class SpeechRecorder {
     }
 
     private boolean isHearingVoice(byte[] buffer, int size) {
-        for( int i = 0; i < size; i++) {
+        for( int i = 0; i < size - 1; i++) {
             int s = buffer[i+1];
             if( s < 0) {
                 s *= -1;

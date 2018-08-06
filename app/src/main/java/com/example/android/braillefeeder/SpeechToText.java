@@ -84,13 +84,14 @@ public class SpeechToText extends Service {
     private SpeechGrpc.SpeechStub mApi;
     private static Handler mHandler;
 
-
     private final StreamObserver<StreamingRecognizeResponse> mStreamObserver
             = new StreamObserver<StreamingRecognizeResponse>() {
         @Override
         public void onNext(StreamingRecognizeResponse value) {
+            Log.d("StreamObserver", "onNext" + value.toString());
             String text = null;
             boolean isFinal = false;
+
             if( value.getResultsCount() > 0) {
                 final StreamingRecognitionResult result = value.getResults(0);
                 isFinal = result.getIsFinal();
@@ -120,12 +121,14 @@ public class SpeechToText extends Service {
     private StreamObserver<StreamingRecognizeRequest> mRequestObserver;
 
     public static SpeechToText from(IBinder binder) {
+        Log.e("SpeechToText", "fromIBinder");
         return ((SpeechBinder) binder).getService();
     }
 
     @Override
     public void onCreate() {
         super.onCreate();
+        Log.e("SpeechToText", "onCreate");
         mHandler = new Handler();
         fetchAccessToken();
     }
@@ -137,7 +140,7 @@ public class SpeechToText extends Service {
         // TODO
         if( mApi != null) {
             final ManagedChannel channel = (ManagedChannel) mApi.getChannel();
-            if( channel != null && !channel.isShutdown()) {
+            if (channel != null && !channel.isShutdown()) {
                 try {
                     channel.shutdown().awaitTermination(5, TimeUnit.SECONDS);
                 } catch (InterruptedException e) {
@@ -148,13 +151,13 @@ public class SpeechToText extends Service {
         }
     }
 
-    private class SpeechBinder extends Binder {
 
+    private class SpeechBinder extends Binder {
         SpeechToText getService() {
             return SpeechToText.this;
         }
-
     }
+
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
@@ -189,10 +192,12 @@ public class SpeechToText extends Service {
     }
 
     public void startRecognizing(int sampleRate) {
+        Log.e(TAG, "Started recognizing.");
         if( mApi == null) {
-            Log.w(TAG, "API not ready. Ignoring the request.");
+            Log.e(TAG, "API not ready. Ignoring the request.");
             return;
         }
+
         mRequestObserver = mApi.streamingRecognize(mStreamObserver);
         mRequestObserver.onNext(StreamingRecognizeRequest.newBuilder()
                 .setStreamingConfig(StreamingRecognitionConfig.newBuilder()
@@ -211,6 +216,7 @@ public class SpeechToText extends Service {
         if (mRequestObserver == null) {
             return;
         }
+        Log.d(TAG, "Call the streaming recognition API");
         // Call the streaming recognition API
         mRequestObserver.onNext(StreamingRecognizeRequest.newBuilder()
                 .setAudioContent(ByteString.copyFrom(data, 0, size))
@@ -241,8 +247,8 @@ public class SpeechToText extends Service {
 
             final InputStream inputStream = getResources().openRawResource(R.raw.credentials);
             try {
-                final GoogleCredentials credentials = GoogleCredentials.fromStream(inputStream);
-                final AccessToken accessToken = credentials.getAccessToken();
+                final GoogleCredentials credentials = GoogleCredentials.fromStream(inputStream).createScoped(SCOPE);
+                final AccessToken accessToken = credentials.refreshAccessToken();
 
                 sharedPreferences.edit()
                         .putString(PREFERENCES_TOKEN_VALUE, accessToken.getTokenValue())

@@ -2,43 +2,30 @@ package com.example.android.braillefeeder;
 
 import android.Manifest;
 import android.app.Activity;
+import android.content.ComponentName;
+import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
-import android.media.AudioManager;
-import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.speech.tts.TextToSpeech;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.example.android.braillefeeder.data.ApiUtils;
 import com.example.android.braillefeeder.data.Article;
 import com.example.android.braillefeeder.data.ArticleList;
 import com.example.android.braillefeeder.data.remote.NewsService;
-import com.google.cloud.speech.v1.RecognitionAudio;
-import com.google.cloud.speech.v1.RecognitionConfig;
-import com.google.cloud.speech.v1.RecognizeResponse;
-import com.google.cloud.speech.v1.SpeechClient;
-import com.google.cloud.speech.v1.SpeechRecognitionAlternative;
-import com.google.cloud.speech.v1.SpeechRecognitionResult;
-import com.google.protobuf.ByteString;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.Locale;
 
-import edu.cmu.pocketsphinx.Hypothesis;
-import edu.cmu.pocketsphinx.RecognitionListener;
-import edu.cmu.pocketsphinx.SpeechRecognizer;
-import edu.cmu.pocketsphinx.SpeechRecognizerSetup;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -56,14 +43,56 @@ public class MainActivity extends Activity implements PocketSphinxSTT.PocketSphi
 
     private TextRead mTextRead;
 
+    private SpeechToText mSpeechToTextService;
+    private SpeechRecorder mSpeechRecorder;
+    private final SpeechRecorder.SpeechRecorderCallback mRecorderCallback = new SpeechRecorder.SpeechRecorderCallback() {
+
+        @Override
+        public void onRecordStarted() {
+            if( mSpeechToTextService != null) {
+                Log.d("onRecordStarted", "true");
+                mSpeechToTextService.startRecognizing(mSpeechRecorder.getSampleRate());
+            }
+        }
+
+        @Override
+        public void onRecordListening(byte[] data, int size) {
+//            Log.d("onRecordListening", "true");
+            if( mSpeechToTextService != null) {
+                mSpeechToTextService.recognize(data, size);
+            }
+        }
+
+        @Override
+        public void onRecordEnded() {
+//            Log.d("onRecordEnded", "true");
+            if( mSpeechToTextService != null) {
+                mSpeechToTextService.finishRecognizing();
+            }
+        }
+    };
+
+    private final ServiceConnection mServiceConnection = new ServiceConnection() {
+
+        @Override
+        public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
+            Log.e("ServiceConnection", "onServiceConnected");
+
+            mSpeechToTextService = SpeechToText.from(iBinder);
+            mSpeechToTextService.addListener(mSpeechServiceListener);
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName componentName) {
+            Log.e("ServiceConnection", "onServiceDisconnected");
+            mSpeechToTextService = null;
+        }
+    };
+
     Button mButton;
-
     TextView mTextView;
-
-    String api = "";
-
+    String api = "c5c6e9d0834c42e086cad21c0bb29f11";
     private int i;
-
     private PocketSphinxSTT mPocketSphinxSTT;
 
     @Override
@@ -77,7 +106,7 @@ public class MainActivity extends Activity implements PocketSphinxSTT.PocketSphi
             return;
         }
 
-        mPocketSphinxSTT = new PocketSphinxSTT(this, this);
+//        mPocketSphinxSTT = new PocketSphinxSTT(this, this);
 
         mButton = findViewById(R.id.button);
         mTextView = findViewById(R.id.textview);
@@ -87,6 +116,7 @@ public class MainActivity extends Activity implements PocketSphinxSTT.PocketSphi
 
             @Override
             public void onClick(View view) {
+                /*
                 if( mArticleList != null) {
                     i++;
                     if( i < 20) {
@@ -95,6 +125,7 @@ public class MainActivity extends Activity implements PocketSphinxSTT.PocketSphi
                 } else {
                     loadAnswers();
                 }
+                */
             }
         });
 
@@ -105,9 +136,8 @@ public class MainActivity extends Activity implements PocketSphinxSTT.PocketSphi
             }
         });
         mNewsService = ApiUtils.getNewService();
-
-        Log.e("URL: ", mNewsService.getResponse(api).request().toString());
-        loadAnswers();
+//        Log.e("URL: ", mNewsService.getResponse(api).request().toString());
+        //loadAnswers();
     }
 
     @Override
@@ -119,12 +149,78 @@ public class MainActivity extends Activity implements PocketSphinxSTT.PocketSphi
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 // Recognizer initialization is a time-consuming and it involves IO,
                 // so we execute it in async task
-                mPocketSphinxSTT = new PocketSphinxSTT(this, this);
+//                mPocketSphinxSTT = new PocketSphinxSTT(this, this);
+                startVoiceRecorder();
             } else {
                 finish();
             }
         }
     }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+
+        bindService(new Intent(this, SpeechToText.class), mServiceConnection, BIND_AUTO_CREATE);
+
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
+                == PackageManager.PERMISSION_GRANTED) {
+            Log.d("onStart", "Permission granted");
+            startVoiceRecorder();
+        } else {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.RECORD_AUDIO}, 1);
+        }
+    }
+
+    @Override
+    protected void onStop() {
+        stopVoiceRecorder();
+
+        if( mSpeechToTextService != null) {
+            mSpeechToTextService.removeListener(mSpeechServiceListener);
+        }
+        unbindService(mServiceConnection);
+        mSpeechToTextService = null;
+        super.onStop();
+    }
+
+    private void startVoiceRecorder() {
+        if (mSpeechRecorder != null) {
+            mSpeechRecorder.stopRecorder();
+        }
+        mSpeechRecorder = new SpeechRecorder(mRecorderCallback);
+        mSpeechRecorder.startRecorder();
+    }
+
+    private void stopVoiceRecorder() {
+        if (mSpeechRecorder != null) {
+            mSpeechRecorder.stopRecorder();
+            mSpeechRecorder = null;
+        }
+    }
+
+    private final SpeechToText.SpeechToTextListener mSpeechServiceListener =
+            new SpeechToText.SpeechToTextListener() {
+                @Override
+                public void onSpeechRecognized(final String text, final boolean isFinal) {
+                    if (isFinal) {
+                        mSpeechRecorder.dismiss();
+                        Log.d("SpeechToTextListener", "isFinal");
+                    }
+                    if (text != null && !TextUtils.isEmpty(text)) {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                if (isFinal) {
+                                    Log.d("Main", text);
+                                    mTextView.setText(text);
+                                }
+                            }
+                        });
+                    }
+                }
+            };
+
 
     public void loadAnswers() {
         mNewsService.getResponse(api).enqueue(new Callback<ArticleList>() {
@@ -151,7 +247,8 @@ public class MainActivity extends Activity implements PocketSphinxSTT.PocketSphi
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        mPocketSphinxSTT.onDestroy();
+        mTextRead.shutDownSpeaker();
+//        mPocketSphinxSTT.onDestroy();
     }
 
     @Override
@@ -174,86 +271,5 @@ public class MainActivity extends Activity implements PocketSphinxSTT.PocketSphi
         mPocketSphinxSTT.startListeningToActivationPhrase();
     }
 
-    /*
-    static void authExplicit(String jsonPath) throws IOException {
-        GoogleCredentials credentials = GoogleCredentials.fromStream(new FileInputStream(jsonPath))
-                .createScoped(Lists.newArrayList("https://www.googleapis.com/auth/cloud-platform"));
 
-        // Context.Storage storage = StorageOptions.newBuilder().setCredentials(credentials).build().getService();
-
-        System.out.println("Buckets:");
-        Page<NetworkStats.Bucket> buckets = storage.list();
-        for (NetworkStats.Bucket bucket : buckets.iterateAll()) {
-            System.out.println(bucket.toString());
-        }
-    }
-
-
-    private class RecognizeTextAsyncTask extends AsyncTask<Void, Void, List<SpeechRecognitionResult>> {
-
-        @Override
-        protected List<SpeechRecognitionResult> doInBackground(Void... voids) {
-            List<SpeechRecognitionResult> results = null;
-            try (SpeechClient speechClient = SpeechClient.create()) {
-
-                // The path to the audio file to transcribe
-                String fileName = "hlasok.mp3";
-
-                // Reads the audio file into memory
-                Path path = Paths.get(fileName);
-                byte[] data = Files.readAllBytes(path);
-                ByteString audioBytes = ByteString.copyFrom(data);
-
-                // Builds the sync recognize request
-                RecognitionConfig config = RecognitionConfig.newBuilder()
-                        .setEncoding(RecognitionConfig.AudioEncoding.LINEAR16)
-                        .setSampleRateHertz(16000)
-                        .setLanguageCode("en-US")
-                        .build();
-                RecognitionAudio audio = RecognitionAudio.newBuilder()
-                        .setContent(audioBytes)
-                        .build();
-
-                // Performs speech recognition on the audio file
-                RecognizeResponse response = speechClient.recognize(config, audio);
-                results = response.getResultsList();
-
-
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            return results;
-        }
-
-        @Override
-        protected void onPostExecute(List<SpeechRecognitionResult> speechRecognitionResults) {
-            super.onPostExecute(speechRecognitionResults);
-            if (speechRecognitionResults != null) {
-                for (SpeechRecognitionResult result : speechRecognitionResults) {
-                    // There can be several alternative transcripts for a given chunk of speech. Just use the
-                    // first (most likely) one here.
-                    SpeechRecognitionAlternative alternative = result.getAlternativesList().get(0);
-                    Log.d("Recognition", alternative.getTranscript());
-                }
-            }
-        }
-    }
-
-    public void startSpeechToTextActivity() {
-
-    }
-    */
 }
-
-
-/*
-if(response.isSuccessful()) {
-                    ArrayList arrayList = response.body();
-                    mTextRead.speakText(mArticleList.get(0));
-                }else {
-                    Log.e("MainActivity", "Response unsuccesful: " + response.code());
-                }
-
-
-                 Log.e("MainActivity", "Response failure: " + t.toString());
- */

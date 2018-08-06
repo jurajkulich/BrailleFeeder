@@ -3,7 +3,6 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/BrailleFeeder.iml" filepath="$PROJECT_DIR$/BrailleFeeder.iml" />
-      <module fileurl="file://D:\Users\Juraj\Documents\AndroidDev\BrailleFeeder\.idea\BrailleFeeder.iml" filepath="D:\Users\Juraj\Documents\AndroidDev\BrailleFeeder\.idea\BrailleFeeder.iml" />
       <module fileurl="file://$PROJECT_DIR$/aars/aars.iml" filepath="$PROJECT_DIR$/aars/aars.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
       <module fileurl="file://$PROJECT_DIR$/models/models.iml" filepath="$PROJECT_DIR$/models/models.iml" />

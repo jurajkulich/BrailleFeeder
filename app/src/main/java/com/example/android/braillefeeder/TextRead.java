@@ -25,8 +25,13 @@ public class TextRead {
         if( article.getDescription() != null) {
             if (!article.getDescription().isEmpty()) {
                 mTextToSpeech.speak(article.getDescription(), TextToSpeech.QUEUE_ADD, null, UTTERANCE_ID);
-                Log.e("AA", article.getDescription());
+//                Log.e("AA", article.getDescription());
             }
         }
+    }
+
+    public void shutDownSpeaker() {
+        mTextToSpeech.stop();
+        mTextToSpeech.shutdown();
     }
 }
