@@ -1,4 +1,4 @@
-package com.example.android.braillefeeder.data.remote;
+package com.example.android.braillefeeder.remote;
 
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;

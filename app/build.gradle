@@ -96,9 +96,8 @@ dependencies {
     implementation project(':aars')
     implementation project(':models')
 
-
-//    implementation ('com.google.cloud:google-cloud-speech:0.56.0-beta')
-
+    implementation 'com.jakewharton:butterknife:8.8.1'
+    annotationProcessor 'com.jakewharton:butterknife-compiler:8.8.1'
 
     implementation "io.grpc:grpc-okhttp:$grpcVersion"
     implementation ("io.grpc:grpc-protobuf-lite:$grpcVersion")

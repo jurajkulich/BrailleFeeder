@@ -135,7 +135,7 @@ public class SpeechToText extends Service {
     public void onDestroy() {
         super.onDestroy();
         mHandler = null;
-        // TODO
+
         if( mApi != null) {
             final ManagedChannel channel = (ManagedChannel) mApi.getChannel();
             if (channel != null && !channel.isShutdown()) {

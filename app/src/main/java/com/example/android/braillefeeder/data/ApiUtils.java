@@ -1,9 +1,7 @@
 package com.example.android.braillefeeder.data;
 
-import com.example.android.braillefeeder.data.remote.NewsService;
-import com.example.android.braillefeeder.data.remote.RetrofitClient;
-
-import retrofit2.Retrofit;
+import com.example.android.braillefeeder.remote.NewsService;
+import com.example.android.braillefeeder.remote.RetrofitClient;
 
 /**
  * Created by Juraj on 3/19/2018.

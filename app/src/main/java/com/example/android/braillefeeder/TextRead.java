@@ -2,9 +2,8 @@ package com.example.android.braillefeeder;
 
 import android.content.Context;
 import android.speech.tts.TextToSpeech;
-import android.util.Log;
 
-import com.example.android.braillefeeder.data.Article;
+import com.example.android.braillefeeder.data.model.Article;
 
 /**
  * Created by Juraj on 3/19/2018.
@@ -27,6 +26,12 @@ public class TextRead {
                 mTextToSpeech.speak(article.getDescription(), TextToSpeech.QUEUE_ADD, null, UTTERANCE_ID);
 //                Log.e("AA", article.getDescription());
             }
+        }
+    }
+
+    public void speakText(String text) {
+        if (!text.isEmpty()) {
+            mTextToSpeech.speak(text, TextToSpeech.QUEUE_ADD, null, UTTERANCE_ID);
         }
     }
 

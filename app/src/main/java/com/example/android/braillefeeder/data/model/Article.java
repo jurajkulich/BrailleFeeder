@@ -1,4 +1,4 @@
-package com.example.android.braillefeeder.data;
+package com.example.android.braillefeeder.data.model;
 
 /**
  * Created by Juraj on 3/18/2018.

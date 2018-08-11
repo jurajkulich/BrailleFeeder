@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">BrailleFeeder</string>
+
+    <string name="help_voice">You can choose from categories business, entertainment, health, science,
+        sports and technology with the form - category science.
+    You can search news about something with the form - about Trup, about california, whatever.
+    </string>
 </resources>
