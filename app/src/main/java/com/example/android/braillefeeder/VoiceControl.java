@@ -16,6 +16,9 @@ public class VoiceControl {
     public interface VoiceControlListener {
         void onRecognizeCommand(ArticleSettings articleSettings);
         void onHelpCommand();
+        void onLocaleChangeCommand();
+        void onNextArticleCommand();
+        void onPreviousArticleCommand();
     }
 
     private static VoiceControlListener mVoiceControlListener;
@@ -24,12 +27,21 @@ public class VoiceControl {
         mVoiceControlListener = voiceControlListener;
     }
 
-    public static void recognizeCommand(String command) {
+    public static void recognizeCommand(String commands) {
+        String command = commands.toLowerCase();
         ArticleSettings articleSettings = new ArticleSettings();
         List<String> commandList = new ArrayList<>(Arrays.asList(command.split(" ")));
         if( command.contains("help")) {
-
-            return;
+            mVoiceControlListener.onHelpCommand();
+        }
+        if( command.contains("switch") && command.contains("slovak")) {
+            mVoiceControlListener.onLocaleChangeCommand();
+        }
+        if( command.contains("next") && command.contains("article")) {
+            mVoiceControlListener.onNextArticleCommand();
+        }
+        if( command.contains("previous") && command.contains("article")) {
+            mVoiceControlListener.onPreviousArticleCommand();
         }
         if(commandList.contains("country")) {
             articleSettings.setCountry(commandList.get(commandList.indexOf("country") + 1));

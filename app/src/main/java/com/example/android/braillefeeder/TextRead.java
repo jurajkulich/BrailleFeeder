@@ -2,6 +2,7 @@ package com.example.android.braillefeeder;
 
 import android.content.Context;
 import android.speech.tts.TextToSpeech;
+import android.speech.tts.UtteranceProgressListener;
 
 import com.example.android.braillefeeder.data.model.Article;
 
@@ -11,13 +12,37 @@ import com.example.android.braillefeeder.data.model.Article;
 
 public class TextRead {
 
+    public interface TextReadListener {
+        void onTextReadCompleted();
+        void onTextReadStarted();
+    }
+
     private static final String UTTERANCE_ID
             = "com.example.android.braillefeeder.UTTERANCE_ID";
 
-    TextToSpeech mTextToSpeech;
+    private TextToSpeech mTextToSpeech;
+    private TextReadListener mTextReadListener;
 
-    public TextRead(Context context, TextToSpeech.OnInitListener onInitListener) {
+    public TextRead(Context context, TextToSpeech.OnInitListener onInitListener, TextReadListener textReadListener) {
         mTextToSpeech = new TextToSpeech(context, onInitListener);
+        mTextReadListener = textReadListener;
+
+        mTextToSpeech.setOnUtteranceProgressListener(new UtteranceProgressListener() {
+            @Override
+            public void onStart(String s) {
+                mTextReadListener.onTextReadStarted();
+            }
+
+            @Override
+            public void onDone(String s) {
+                mTextReadListener.onTextReadCompleted();
+            }
+
+            @Override
+            public void onError(String s) {
+                mTextReadListener.onTextReadCompleted();
+            }
+        });
     }
 
     public void speakText(Article article) {
@@ -38,5 +63,13 @@ public class TextRead {
     public void shutDownSpeaker() {
         mTextToSpeech.stop();
         mTextToSpeech.shutdown();
+    }
+
+    public TextToSpeech getTextToSpeech() {
+        return mTextToSpeech;
+    }
+
+    public void setTextToSpeech(TextToSpeech textToSpeech) {
+        mTextToSpeech = textToSpeech;
     }
 }

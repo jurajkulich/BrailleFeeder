@@ -6,16 +6,27 @@ import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.media.Image;
+import android.media.ImageReader;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
+import android.os.Handler;
+import android.os.HandlerThread;
 import android.os.IBinder;
+import android.provider.MediaStore;
 import android.speech.tts.TextToSpeech;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.content.FileProvider;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.example.android.braillefeeder.data.ApiUtils;
@@ -24,6 +35,8 @@ import com.example.android.braillefeeder.data.ArticleList;
 import com.example.android.braillefeeder.data.model.ArticleSettings;
 import com.example.android.braillefeeder.remote.NewsService;
 
+import java.io.File;
+import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -36,20 +49,25 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 
-public class MainActivity extends Activity implements VoiceControl.VoiceControlListener{
+public class MainActivity extends Activity implements VoiceControl.VoiceControlListener, TextRead.TextReadListener, VisionService.VisionServiceListener{
 
     private static final int PERMISSIONS_REQUEST_RECORD_AUDIO = 1;
+    private static final int PERMISSIONS_REQUEST_CAMERA = 2;
 
     private List<Article> mArticleList;
 
     private NewsService mNewsService;
-
     private TextRead mTextRead;
-
-    VoiceControl mVoiceControl = new VoiceControl(this);
-
     private SpeechToText mSpeechToTextService;
     private SpeechRecorder mSpeechRecorder;
+    private CameraService mCameraService;
+    private VisionService mVisionService;
+
+    private Handler mHandlerCamera;
+    private HandlerThread mThreadCamera;
+
+    private VoiceControl mVoiceControl = new VoiceControl(this);
+
     private final SpeechRecorder.SpeechRecorderCallback mRecorderCallback = new SpeechRecorder.SpeechRecorderCallback() {
 
         @Override
@@ -95,13 +113,20 @@ public class MainActivity extends Activity implements VoiceControl.VoiceControlL
     @BindView(R.id.button)
     Button mButton;
 
+    @BindView(R.id.button_camera)
+    Button mCameraButton;
+
     @BindView(R.id.textview)
     TextView mTextView;
 
-    String api = "";
-    Map<String, String> apiMap = new HashMap<>();
+    @BindView(R.id.imageview)
+    ImageView mImageView;
 
-    private int i;
+    private String api = "";
+    private Map<String, String> apiMap = new HashMap<>();
+    private String locale;
+
+    private int articlePosition;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -109,31 +134,44 @@ public class MainActivity extends Activity implements VoiceControl.VoiceControlL
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
 
+        mNewsService = ApiUtils.getNewService();
+        mThreadCamera = new HandlerThread("CameraThread");
+        mThreadCamera.start();
+        mHandlerCamera = new Handler(mThreadCamera.getLooper());
+
+        mCameraService = CameraService.getInstance();
+        mCameraService.initializeCamera(this, mHandlerCamera, mOnImageAvailableListener);
+
+        mVisionService = new VisionService(this, this);
+
+        locale = "us";
+        loadAnswers();
         mButton.setOnClickListener(new View.OnClickListener() {
 
             @Override
             public void onClick(View view) {
-                if( mArticleList != null) {
-                    if( i < mArticleList.size()) {
-                        mTextRead.speakText(mArticleList.get(i));
-                        stopVoiceRecorder();
-                        i++;
-                    }
-                } else {
-                    loadAnswers();
-                }
-
+                changeArticle(1);
             }
         });
+
+        mCameraButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                mCameraService.takePicture();
+            }
+        });
+
+
 
         mTextRead = new TextRead(this, new TextToSpeech.OnInitListener() {
             @Override
             public void onInit(int i) {
-                mTextRead.mTextToSpeech.setLanguage(new Locale("us"));
+                mTextRead.getTextToSpeech().setLanguage(new Locale(locale));
+                mTextRead.speakText(getResources().getString(R.string.welcome_speech));
             }
-        });
-        mNewsService = ApiUtils.getNewService();
-        loadAnswers();
+        }, this);
+
+
     }
 
     @Override
@@ -144,6 +182,12 @@ public class MainActivity extends Activity implements VoiceControl.VoiceControlL
         if (requestCode == PERMISSIONS_REQUEST_RECORD_AUDIO) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 startVoiceRecorder();
+            } else {
+                finish();
+            }
+        } else if (requestCode == PERMISSIONS_REQUEST_CAMERA) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
             } else {
                 finish();
             }
@@ -163,6 +207,11 @@ public class MainActivity extends Activity implements VoiceControl.VoiceControlL
         } else {
             startVoiceRecorder();
         }
+        permissionCheck = ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.CAMERA);
+        if (permissionCheck != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA}, PERMISSIONS_REQUEST_CAMERA);
+            return;
+        }
     }
 
     @Override
@@ -174,6 +223,10 @@ public class MainActivity extends Activity implements VoiceControl.VoiceControlL
         }
         unbindService(mServiceConnection);
         mSpeechToTextService = null;
+
+        mCameraService.shutdown();
+        mThreadCamera.quitSafely();
+
         super.onStop();
     }
 
@@ -225,7 +278,7 @@ public class MainActivity extends Activity implements VoiceControl.VoiceControlL
                     Log.d("loadAnswers", response.raw().request().url().toString());
                     ArticleList articleList = response.body();
                     mArticleList = articleList.getArticleList();
-                    i = 0;
+                    articlePosition = 0;
                 }else {
                     Log.d("loadAnswers", response.raw().request().url().toString());
                     Log.e("MainActivity", "Response unsuccesful: " + response.code());
@@ -240,7 +293,7 @@ public class MainActivity extends Activity implements VoiceControl.VoiceControlL
     }
 
     private void buildQuery() {
-        apiMap.put("country", "us");
+        apiMap.put("country", locale);
         apiMap.put("apiKey", api);
     }
 
@@ -267,6 +320,73 @@ public class MainActivity extends Activity implements VoiceControl.VoiceControlL
 
     @Override
     public void onHelpCommand() {
-        mTextRead.speakText(getResources().getString(R.string.help_voice));
+        mTextRead.speakText(getResources().getString(R.string.help_speech));
+    }
+
+    @Override
+    public void onLocaleChangeCommand() {
+        locale = "sk";
+        mTextRead.getTextToSpeech().setLanguage(new Locale(locale));
+        loadAnswers();
+    }
+
+    @Override
+    public void onNextArticleCommand() {
+        changeArticle(1);
+    }
+
+    @Override
+    public void onPreviousArticleCommand() {
+        changeArticle(-1);
+    }
+
+    @Override
+    public void onTextReadCompleted() {
+        startVoiceRecorder();
+    }
+
+    @Override
+    public void onTextReadStarted() {
+        stopVoiceRecorder();
+    }
+
+    public void changeArticle(int pos) {
+        if( mArticleList != null) {
+            if( articlePosition + pos < mArticleList.size() && articlePosition + pos >= 0) {
+                Log.d("changeArticle", articlePosition + "");
+                articlePosition += pos;
+                Log.d("changeArticle", articlePosition + "");
+                mTextRead.speakText(mArticleList.get(articlePosition));
+            }
+        } else {
+            loadAnswers();
+        }
+    }
+
+    private ImageReader.OnImageAvailableListener mOnImageAvailableListener =
+            new ImageReader.OnImageAvailableListener() {
+                @Override
+                public void onImageAvailable(ImageReader imageReader) {
+                    Image image = imageReader.acquireLatestImage();
+                    ByteBuffer buffer = image.getPlanes()[0].getBuffer();
+                    byte[] bytes = new byte[buffer.capacity()];
+                    buffer.get(bytes);
+                    final Bitmap bitmapImage = BitmapFactory.decodeByteArray(bytes, 0, bytes.length, null);
+                    image.close();
+                    mVisionService.callCloudVision(bitmapImage);
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            mImageView.setImageBitmap(bitmapImage);
+                        }
+                    });
+
+                }
+    };
+
+    @Override
+    public void onVisionCompleted(String result) {
+        mTextRead.speakText(result);
+        Log.d("onVisionCompleted", result);
     }
 }

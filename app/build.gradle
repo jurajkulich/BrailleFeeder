@@ -109,6 +109,18 @@ dependencies {
     implementation('com.google.auth:google-auth-library-oauth2-http:0.10.0') {
         exclude module: 'httpclient'
     }
+
+    implementation ('com.google.api-client:google-api-client-android:1.23.0') {
+        exclude module: 'guava-jdk5'
+        exclude module: 'httpclient'
+    }
+    implementation ('com.google.http-client:google-http-client-gson:1.23.0') {
+        exclude module: 'httpclient'
+        exclude module: 'guava-jdk5'
+    }
+    implementation ('com.google.apis:google-api-services-vision:v1-rev369-1.23.0') {
+        exclude module: 'guava-jdk5'
+    }
 }
 
 task copySecretKey(type: Copy) {

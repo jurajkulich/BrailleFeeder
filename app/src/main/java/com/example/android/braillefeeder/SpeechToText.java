@@ -214,7 +214,7 @@ public class SpeechToText extends Service {
         if (mRequestObserver == null) {
             return;
         }
-        Log.d(TAG, "Call the streaming recognition API");
+//        Log.d(TAG, "Call the streaming recognition API");
         // Call the streaming recognition API
         mRequestObserver.onNext(StreamingRecognizeRequest.newBuilder()
                 .setAudioContent(ByteString.copyFrom(data, 0, size))

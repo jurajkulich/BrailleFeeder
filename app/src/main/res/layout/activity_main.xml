@@ -11,14 +11,29 @@
         android:id="@+id/button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:layout_constraintBottom_toTopOf="@id/textview"
-        app:layout_constraintTop_toTopOf="parent"/>
+        android:text="Next article"/>
+
+    <Button
+        android:id="@+id/button_camera"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Camera"
+        app:layout_constraintLeft_toRightOf="@id/button"/>
 
     <TextView
         android:id="@+id/textview"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:layout_constraintTop_toBottomOf="@id/button"
-        app:layout_constraintBottom_toBottomOf="parent"/>
+        android:text="Text place"
+        android:layout_below="@id/button"
+        app:layout_constraintTop_toBottomOf="@id/button"/>
+
+    <ImageView
+        android:id="@+id/imageview"
+        android:layout_width="150dp"
+        android:layout_height="wrap_content"
+        android:adjustViewBounds="true"
+        android:layout_below="@id/textview"
+        app:layout_constraintTop_toBottomOf="@id/textview"/>
 
 </android.support.constraint.ConstraintLayout>
