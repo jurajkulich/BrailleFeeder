@@ -29,7 +29,7 @@ import java.util.Locale;
 public class VisionService {
 
     private static final String TAG = "VisionService";
-    private static final String CLOUD_VISION_API_KEY = "";
+    private static final String CLOUD_VISION_API_KEY = "AIzaSyC8brMCQq96z5INuEzCvmH0DYKUUFETizg";
 
     public interface VisionServiceListener {
         void onVisionCompleted(String result);

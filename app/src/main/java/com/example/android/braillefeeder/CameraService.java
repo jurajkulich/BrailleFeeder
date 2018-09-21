@@ -2,6 +2,7 @@ package com.example.android.braillefeeder;
 
 import android.content.Context;
 import android.graphics.ImageFormat;
+import android.graphics.SurfaceTexture;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCaptureSession;
 import android.hardware.camera2.CameraDevice;
@@ -13,11 +14,12 @@ import android.media.ImageReader;
 import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.util.Log;
+import android.view.Surface;
 
 import java.util.Collections;
 
 
-public class CameraService {
+public class    CameraService {
 
     private static final int IMAGE_WIDTH = 1280;
     private static final int IMAGE_HEIGHT = 960;
@@ -86,7 +88,6 @@ public class CameraService {
 
     public void takePicture() {
         if( mCameraDevice == null) {
-
             return;
         }
         try {
@@ -149,6 +150,7 @@ public class CameraService {
     public void shutdown() {
         if( mCameraDevice != null) {
             mCameraDevice.close();
+            mCameraCaptureSession.close();
         }
 
 

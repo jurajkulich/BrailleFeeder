@@ -34,6 +34,7 @@ import com.example.android.braillefeeder.data.model.Article;
 import com.example.android.braillefeeder.data.ArticleList;
 import com.example.android.braillefeeder.data.model.ArticleSettings;
 import com.example.android.braillefeeder.remote.NewsService;
+import com.google.android.things.pio.PeripheralManager;
 
 import java.io.File;
 import java.nio.ByteBuffer;
@@ -67,6 +68,8 @@ public class MainActivity extends Activity implements VoiceControl.VoiceControlL
     private HandlerThread mThreadCamera;
 
     private VoiceControl mVoiceControl = new VoiceControl(this);
+
+    private PeripheralConnections mPeripheralConnections;
 
     private final SpeechRecorder.SpeechRecorderCallback mRecorderCallback = new SpeechRecorder.SpeechRecorderCallback() {
 
@@ -128,7 +131,7 @@ public class MainActivity extends Activity implements VoiceControl.VoiceControlL
     @BindView(R.id.button_recorder_off)
     Button mButtonRecorderOff;
 
-    private String api = "";
+    private String api = "cb79c51392b84f89a51b4020b8a4aa90";
     private Map<String, String> apiMap = new HashMap<>();
     private String locale;
 
@@ -139,6 +142,8 @@ public class MainActivity extends Activity implements VoiceControl.VoiceControlL
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
+
+        mPeripheralConnections = new PeripheralConnections();
 
         mNewsService = ApiUtils.getNewService();
         mThreadCamera = new HandlerThread("CameraThread");
@@ -360,7 +365,7 @@ public class MainActivity extends Activity implements VoiceControl.VoiceControlL
 
     @Override
     public void onTextReadCompleted() {
-        startVoiceRecorder();
+//        startVoiceRecorder();
     }
 
     @Override
