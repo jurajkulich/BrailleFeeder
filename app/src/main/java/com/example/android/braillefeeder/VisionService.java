@@ -29,7 +29,7 @@ import java.util.Locale;
 public class VisionService {
 
     private static final String TAG = "VisionService";
-    private static final String CLOUD_VISION_API_KEY = "AIzaSyAP91uoB4PRJ_IKFNtGp7jhgnYeqzDPZIo";
+    private static final String CLOUD_VISION_API_KEY = "";
 
     public interface VisionServiceListener {
         void onVisionCompleted(String result);
@@ -139,7 +139,8 @@ public class VisionService {
         List<EntityAnnotation> labels = response.getResponses().get(0).getLabelAnnotations();
         if (labels != null) {
             for (EntityAnnotation label : labels) {
-                message.append(String.format(Locale.US, "%.3f: %s", label.getScore(), label.getDescription()));
+                // message.append(String.format(Locale.US, "%.3f: %s", label.getScore(), label.getDescription()));
+                message.append(String.format(Locale.US, "%s", label.getDescription()));
                 message.append("\n");
             }
         } else {

@@ -122,6 +122,12 @@ public class MainActivity extends Activity implements VoiceControl.VoiceControlL
     @BindView(R.id.imageview)
     ImageView mImageView;
 
+    @BindView(R.id.button_recorder_on)
+    Button mButtonRecorderOn;
+
+    @BindView(R.id.button_recorder_off)
+    Button mButtonRecorderOff;
+
     private String api = "";
     private Map<String, String> apiMap = new HashMap<>();
     private String locale;
@@ -161,7 +167,19 @@ public class MainActivity extends Activity implements VoiceControl.VoiceControlL
             }
         });
 
+        mButtonRecorderOn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                startVoiceRecorder();
+            }
+        });
 
+        mButtonRecorderOff.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                stopVoiceRecorder();
+            }
+        });
 
         mTextRead = new TextRead(this, new TextToSpeech.OnInitListener() {
             @Override

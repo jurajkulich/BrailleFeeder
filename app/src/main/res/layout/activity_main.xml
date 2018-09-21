@@ -20,6 +20,20 @@
         android:text="Camera"
         app:layout_constraintLeft_toRightOf="@id/button"/>
 
+    <Button
+        android:id="@+id/button_recorder_on"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Recorder on"
+        app:layout_constraintLeft_toRightOf="@id/button_camera"/>
+
+    <Button
+        android:id="@+id/button_recorder_off"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Recorder off"
+        app:layout_constraintLeft_toRightOf="@id/button_recorder_on"/>
+
     <TextView
         android:id="@+id/textview"
         android:layout_width="match_parent"
