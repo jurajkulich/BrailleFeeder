@@ -18,6 +18,7 @@ import com.google.api.services.vision.v1.model.BatchAnnotateImagesRequest;
 import com.google.api.services.vision.v1.model.BatchAnnotateImagesResponse;
 import com.google.api.services.vision.v1.model.EntityAnnotation;
 import com.google.api.services.vision.v1.model.Feature;
+import com.google.protobuf.Type;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -29,7 +30,7 @@ import java.util.Locale;
 public class VisionService {
 
     private static final String TAG = "VisionService";
-    private static final String CLOUD_VISION_API_KEY = "AIzaSyC8brMCQq96z5INuEzCvmH0DYKUUFETizg";
+    private static final String CLOUD_VISION_API_KEY = "";
 
     public interface VisionServiceListener {
         void onVisionCompleted(String result);
@@ -78,6 +79,9 @@ public class VisionService {
                 labelDetection.setType("LABEL_DETECTION");
                 labelDetection.setMaxResults(5);
                 add(labelDetection);
+                Feature textDetection = new Feature();
+                textDetection.setType("TEXT_DETECTION");
+                add(textDetection);
             }});
 
             add(annotateImageRequest);
@@ -136,15 +140,27 @@ public class VisionService {
     private static String convertResponseToString(BatchAnnotateImagesResponse response) {
         StringBuilder message = new StringBuilder("I found these things:\n\n");
 
-        List<EntityAnnotation> labels = response.getResponses().get(0).getLabelAnnotations();
-        if (labels != null) {
-            for (EntityAnnotation label : labels) {
+        List<EntityAnnotation> textAnnotations = response.getResponses().get(0).getTextAnnotations();
+        List<EntityAnnotation> labelAnnotations = response.getResponses().get(0).getLabelAnnotations();
+        if (labelAnnotations != null) {
+            for (EntityAnnotation label : labelAnnotations) {
                 // message.append(String.format(Locale.US, "%.3f: %s", label.getScore(), label.getDescription()));
                 message.append(String.format(Locale.US, "%s", label.getDescription()));
                 message.append("\n");
             }
         } else {
             message.append("nothing");
+        }
+
+        if (textAnnotations != null) {
+            message.append("I found this text:\n\n");
+            for (EntityAnnotation label : textAnnotations) {
+                // message.append(String.format(Locale.US, "%.3f: %s", label.getScore(), label.getDescription()));
+                message.append(String.format(Locale.US, "%s", label.getDescription()));
+                message.append("\n");
+            }
+        } else {
+            message.append("I found no text.");
         }
 
         return message.toString();

@@ -16,5 +16,5 @@ import retrofit2.http.QueryMap;
 public interface NewsService {
 
     @GET("top-headlines") // ?country=us
-    Call<ArticleList> getResponse(@QueryMap Map<String, String> options); // @Query("apiKey") String apiKey
+    Call<ArticleList> getResponse(@QueryMap Map<String, String> options);
 }

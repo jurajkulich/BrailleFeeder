@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="welcome_speech">Zdraví ťa BrailleFeeder! Som pripravený.</string>
+    <string name="command_not_found">Takýto príkaz nepoznám. Pre nápovedu povedz - pomoc.</string>
+    <string name="taken_photo">Odofotená fotorafia</string>
+    <string name="on_take_photo">Snímok bol vytvorený. Počkajte na spracovanie.</string>
+    <string name="help_speech">Môžete si vybrať z kategórii biznis, zábava, zdravie, veda, šport a technológie. Príkaz je vo forme - kategória veda. Do zmeny jazyka povedzte - chcem angličtinu.</string>
+</resources>

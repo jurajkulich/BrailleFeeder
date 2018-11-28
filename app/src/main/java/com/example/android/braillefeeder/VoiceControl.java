@@ -19,6 +19,8 @@ public class VoiceControl {
         void onLocaleChangeCommand();
         void onNextArticleCommand();
         void onPreviousArticleCommand();
+        void onTakePhotoCommand();
+        void onCommandNotFound();
     }
 
     private static VoiceControlListener mVoiceControlListener;
@@ -34,35 +36,41 @@ public class VoiceControl {
         if( command.contains("help")) {
             mVoiceControlListener.onHelpCommand();
         }
-        if( command.contains("switch") && command.contains("slovak")) {
+        else if( command.contains("switch") && command.contains("slovak")) {
             mVoiceControlListener.onLocaleChangeCommand();
         }
-        if( command.contains("next") && command.contains("article")) {
+        else if( command.contains("next") && command.contains("article")) {
             mVoiceControlListener.onNextArticleCommand();
         }
-        if( command.contains("previous") && command.contains("article")) {
+        else if( command.contains("previous") && command.contains("article")) {
             mVoiceControlListener.onPreviousArticleCommand();
         }
-        if(commandList.contains("country")) {
+        else if(commandList.contains("country")) {
             articleSettings.setCountry(commandList.get(commandList.indexOf("country") + 1));
             Log.d(TAG, articleSettings.getCountry());
         }
-        if(commandList.contains("source")) {
+        else if(commandList.contains("source")) {
             articleSettings.setSource(commandList.get(commandList.indexOf("source") + 1));
             Log.d(TAG, articleSettings.getSource());
         }
-        if(commandList.contains("category")) {
+        else if(commandList.contains("category")) {
             articleSettings.setCategory(commandList.get(commandList.indexOf("category") + 1));
             Log.d(TAG, articleSettings.getCategory());
         }
-        if(commandList.contains("about")) {
+        else if(commandList.contains("about")) {
             articleSettings.setAbout(commandList.get(commandList.indexOf("about") + 1));
             Log.d(TAG, articleSettings.getAbout());
         }
-        if(commandList.contains("language")) {
+        else if(commandList.contains("language")) {
             articleSettings.setLanguage(commandList.get(commandList.indexOf("language") + 1));
             Log.d(TAG, articleSettings.getLanguage());
         }
+        else if(commandList.contains("take") && commandList.contains("photo")) {
+            mVoiceControlListener.onTakePhotoCommand();
+            Log.d(TAG, "TakePhoto");
+        }
+        else
+            mVoiceControlListener.onCommandNotFound();
         mVoiceControlListener.onRecognizeCommand(articleSettings);
     }
 }

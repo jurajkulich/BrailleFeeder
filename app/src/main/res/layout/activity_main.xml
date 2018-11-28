@@ -1,11 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout
+<ScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_height="wrap_content"
     tools:context="com.example.android.braillefeeder.MainActivity">
+
+<androidx.constraintlayout.widget.ConstraintLayout
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
 
     <Button
         android:id="@+id/button"
@@ -38,16 +42,40 @@
         android:id="@+id/textview"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Text place"
         android:layout_below="@id/button"
+        android:text="Text place"
         app:layout_constraintTop_toBottomOf="@id/button"/>
 
     <ImageView
         android:id="@+id/imageview"
         android:layout_width="150dp"
         android:layout_height="wrap_content"
-        android:adjustViewBounds="true"
         android:layout_below="@id/textview"
-        app:layout_constraintTop_toBottomOf="@id/textview"/>
+        android:adjustViewBounds="true"
+        android:contentDescription="@string/taken_photo"
+        app:layout_constraintBottom_toTopOf="@+id/vision_answer_textview"
+        app:layout_constraintTop_toBottomOf="@+id/textview"/>
 
-</android.support.constraint.ConstraintLayout>
+    <TextView
+        android:id="@+id/vision_answer_textview"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:maxLines="10"
+        app:layout_constraintBottom_toTopOf="@+id/article_textview"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/imageview"/>
+
+    <TextView
+        android:id="@+id/article_textview"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:maxLines="4"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/vision_answer_textview"/>
+</androidx.constraintlayout.widget.ConstraintLayout>
+
+</ScrollView>

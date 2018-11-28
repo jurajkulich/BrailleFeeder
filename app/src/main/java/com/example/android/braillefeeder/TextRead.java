@@ -51,7 +51,12 @@ public class TextRead {
                 mTextToSpeech.speak(article.getDescription(), TextToSpeech.QUEUE_ADD, null, UTTERANCE_ID);
 //                Log.e("AA", article.getDescription());
             }
+        } else if( article.getTitle() != null) {
+            if(!article.getTitle().isEmpty()) {
+                mTextToSpeech.speak(article.getTitle(), TextToSpeech.QUEUE_ADD, null, UTTERANCE_ID);
+            }
         }
+
     }
 
     public void speakText(String text) {
@@ -63,6 +68,10 @@ public class TextRead {
     public void shutDownSpeaker() {
         mTextToSpeech.stop();
         mTextToSpeech.shutdown();
+    }
+
+    public void stopSpeaker() {
+        mTextToSpeech.stop();
     }
 
     public TextToSpeech getTextToSpeech() {

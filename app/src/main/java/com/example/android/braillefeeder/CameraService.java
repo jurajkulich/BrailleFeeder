@@ -2,7 +2,6 @@ package com.example.android.braillefeeder;
 
 import android.content.Context;
 import android.graphics.ImageFormat;
-import android.graphics.SurfaceTexture;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCaptureSession;
 import android.hardware.camera2.CameraDevice;
@@ -12,9 +11,8 @@ import android.hardware.camera2.CaptureResult;
 import android.hardware.camera2.TotalCaptureResult;
 import android.media.ImageReader;
 import android.os.Handler;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 import android.util.Log;
-import android.view.Surface;
 
 import java.util.Collections;
 
@@ -111,7 +109,7 @@ public class    CameraService {
 
         @Override
         public void onConfigureFailed(@NonNull CameraCaptureSession cameraCaptureSession) {
-
+            Log.e("mStateCallback", "Configure failed");
         }
     };
 
@@ -150,9 +148,9 @@ public class    CameraService {
     public void shutdown() {
         if( mCameraDevice != null) {
             mCameraDevice.close();
+        }
+        if( mCameraCaptureSession != null) {
             mCameraCaptureSession.close();
         }
-
-
     }
 }

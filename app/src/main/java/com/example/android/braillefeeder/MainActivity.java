@@ -10,18 +10,14 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.media.Image;
 import android.media.ImageReader;
-import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.IBinder;
-import android.provider.MediaStore;
 import android.speech.tts.TextToSpeech;
-import android.support.annotation.NonNull;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
-import android.support.v4.content.FileProvider;
+import androidx.annotation.NonNull;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
@@ -34,9 +30,7 @@ import com.example.android.braillefeeder.data.model.Article;
 import com.example.android.braillefeeder.data.ArticleList;
 import com.example.android.braillefeeder.data.model.ArticleSettings;
 import com.example.android.braillefeeder.remote.NewsService;
-import com.google.android.things.pio.PeripheralManager;
 
-import java.io.File;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.List;
@@ -49,30 +43,45 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-
-public class MainActivity extends Activity implements VoiceControl.VoiceControlListener, TextRead.TextReadListener, VisionService.VisionServiceListener{
+// MainActivity - where the shit happens
+public class MainActivity extends Activity implements
+        VoiceControl.VoiceControlListener,
+        TextRead.TextReadListener,
+        VisionService.VisionServiceListener,
+        PeripheralConnections.PeripheralConnectionsListener{
 
     private static final int PERMISSIONS_REQUEST_RECORD_AUDIO = 1;
     private static final int PERMISSIONS_REQUEST_CAMERA = 2;
 
+    // list of current fetched articles
     private List<Article> mArticleList;
 
     private NewsService mNewsService;
+
+    // Text To Speech service
     private TextRead mTextRead;
+    // Speech To Text service
     private SpeechToText mSpeechToTextService;
+    // Voice recorder for voice control
     private SpeechRecorder mSpeechRecorder;
+    // Camera Service
     private CameraService mCameraService;
+    // Vision service for photo analysis
     private VisionService mVisionService;
 
+    // Different thread for photo capture
     private Handler mHandlerCamera;
     private HandlerThread mThreadCamera;
 
     private VoiceControl mVoiceControl = new VoiceControl(this);
 
+    // Class for accessing peripherals
     private PeripheralConnections mPeripheralConnections;
 
+    // Callback for SpeechRecorder
     private final SpeechRecorder.SpeechRecorderCallback mRecorderCallback = new SpeechRecorder.SpeechRecorderCallback() {
 
+        // Function is called when the speaking is detected
         @Override
         public void onRecordStarted() {
             if( mSpeechToTextService != null) {
@@ -80,6 +89,7 @@ public class MainActivity extends Activity implements VoiceControl.VoiceControlL
             }
         }
 
+        // Function is called when the speaking is still active
         @Override
         public void onRecordListening(byte[] data, int size) {
             if( mSpeechToTextService != null) {
@@ -87,6 +97,7 @@ public class MainActivity extends Activity implements VoiceControl.VoiceControlL
             }
         }
 
+        // Function is called when the speaking is done
         @Override
         public void onRecordEnded() {
             if( mSpeechToTextService != null) {
@@ -99,16 +110,14 @@ public class MainActivity extends Activity implements VoiceControl.VoiceControlL
 
         @Override
         public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
-            Log.e("ServiceConnection", "onServiceConnected");
-
+            Log.d("ServiceConnection", "onServiceConnected");
             mSpeechToTextService = SpeechToText.from(iBinder);
             mSpeechToTextService.addListener(mSpeechServiceListener);
         }
 
         @Override
         public void onServiceDisconnected(ComponentName componentName) {
-            Log.e("ServiceConnection", "onServiceDisconnected");
-
+            Log.d("ServiceConnection", "onServiceDisconnected");
             mSpeechToTextService = null;
         }
     };
@@ -120,7 +129,13 @@ public class MainActivity extends Activity implements VoiceControl.VoiceControlL
     Button mCameraButton;
 
     @BindView(R.id.textview)
-    TextView mTextView;
+    TextView mSpeechTextView;
+
+    @BindView(R.id.vision_answer_textview)
+    TextView mVisionAnswerTextView;
+
+    @BindView(R.id.article_textview)
+    TextView mArticleTextView;
 
     @BindView(R.id.imageview)
     ImageView mImageView;
@@ -131,11 +146,14 @@ public class MainActivity extends Activity implements VoiceControl.VoiceControlL
     @BindView(R.id.button_recorder_off)
     Button mButtonRecorderOff;
 
-    private String api = "cb79c51392b84f89a51b4020b8a4aa90";
+    // Api key for News API
+    private final static String API_KEY_NEWS = "";
+    // Hashmap for query build
     private Map<String, String> apiMap = new HashMap<>();
     private String locale;
 
-    private int articlePosition;
+    // current position from fetched articles
+    private int mArticlePosition;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -143,9 +161,10 @@ public class MainActivity extends Activity implements VoiceControl.VoiceControlL
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
 
-        mPeripheralConnections = new PeripheralConnections();
+        // mPeripheralConnections = new PeripheralConnections(this);
 
         mNewsService = ApiUtils.getNewService();
+
         mThreadCamera = new HandlerThread("CameraThread");
         mThreadCamera.start();
         mHandlerCamera = new Handler(mThreadCamera.getLooper());
@@ -161,6 +180,9 @@ public class MainActivity extends Activity implements VoiceControl.VoiceControlL
 
             @Override
             public void onClick(View view) {
+                if( mTextRead != null) {
+                    mTextRead.stopSpeaker();
+                }
                 changeArticle(1);
             }
         });
@@ -175,6 +197,9 @@ public class MainActivity extends Activity implements VoiceControl.VoiceControlL
         mButtonRecorderOn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                if( mTextRead != null) {
+                    mTextRead.stopSpeaker();
+                }
                 startVoiceRecorder();
             }
         });
@@ -209,13 +234,12 @@ public class MainActivity extends Activity implements VoiceControl.VoiceControlL
                 finish();
             }
         } else if (requestCode == PERMISSIONS_REQUEST_CAMERA) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-
-            } else {
+            if (grantResults.length > 0 && grantResults[0] != PackageManager.PERMISSION_GRANTED) {
                 finish();
             }
         }
     }
+
 
     @Override
     protected void onStart() {
@@ -282,7 +306,7 @@ public class MainActivity extends Activity implements VoiceControl.VoiceControlL
                             public void run() {
                                 if (isFinal) {
                                     Log.d("Main", text);
-                                    mTextView.setText(text);
+                                    mSpeechTextView.setText(text);
                                     VoiceControl.recognizeCommand(text);
                                 }
                             }
@@ -299,9 +323,10 @@ public class MainActivity extends Activity implements VoiceControl.VoiceControlL
             public void onResponse(Call<ArticleList> call, Response<ArticleList> response) {
                 if(response.isSuccessful()) {
                     Log.d("loadAnswers", response.raw().request().url().toString());
-                    ArticleList articleList = response.body();
-                    mArticleList = articleList.getArticleList();
-                    articlePosition = 0;
+                    if( response.body() != null) {
+                        mArticleList = response.body().getArticleList();
+                    }
+                    mArticlePosition = 0;
                 }else {
                     Log.d("loadAnswers", response.raw().request().url().toString());
                     Log.e("MainActivity", "Response unsuccesful: " + response.code());
@@ -317,7 +342,8 @@ public class MainActivity extends Activity implements VoiceControl.VoiceControlL
 
     private void buildQuery() {
         apiMap.put("country", locale);
-        apiMap.put("apiKey", api);
+        apiMap.put("apiKey", API_KEY_NEWS);
+        apiMap.put("pageSize", Integer.toString(20));
     }
 
     @Override
@@ -364,6 +390,16 @@ public class MainActivity extends Activity implements VoiceControl.VoiceControlL
     }
 
     @Override
+    public void onTakePhotoCommand() {
+        mCameraService.takePicture();
+    }
+
+    @Override
+    public void onCommandNotFound() {
+        mTextRead.speakText(getString(R.string.command_not_found));
+    }
+
+    @Override
     public void onTextReadCompleted() {
 //        startVoiceRecorder();
     }
@@ -375,13 +411,16 @@ public class MainActivity extends Activity implements VoiceControl.VoiceControlL
 
     public void changeArticle(int pos) {
         if( mArticleList != null) {
-            if( articlePosition + pos < mArticleList.size() && articlePosition + pos >= 0) {
-                Log.d("changeArticle", articlePosition + "");
-                articlePosition += pos;
-                Log.d("changeArticle", articlePosition + "");
-                mTextRead.speakText(mArticleList.get(articlePosition));
+            if( (mArticlePosition + pos) < mArticleList.size() && (mArticlePosition + pos) >= 0) {
+                Log.d("changeArticle", mArticlePosition + "");
+                mArticlePosition += pos;
+                Log.d("changeArticle", mArticlePosition + "");
+                mTextRead.speakText(mArticleList.get(mArticlePosition));
+                mArticleTextView.setText(mArticleList.get(mArticlePosition).getDescription());
             }
         } else {
+            mTextRead.speakText("I am downloading articles.");
+            Log.e("changeArticle", "loadAnswers() because articleList is Null");
             loadAnswers();
         }
     }
@@ -397,6 +436,7 @@ public class MainActivity extends Activity implements VoiceControl.VoiceControlL
                     final Bitmap bitmapImage = BitmapFactory.decodeByteArray(bytes, 0, bytes.length, null);
                     image.close();
                     mVisionService.callCloudVision(bitmapImage);
+                    mTextRead.speakText(getResources().getString(R.string.on_take_photo));
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
@@ -410,6 +450,12 @@ public class MainActivity extends Activity implements VoiceControl.VoiceControlL
     @Override
     public void onVisionCompleted(String result) {
         mTextRead.speakText(result);
+        mVisionAnswerTextView.setText(result);
         Log.d("onVisionCompleted", result);
+    }
+
+    @Override
+    public void onButtonClicked(boolean state) {
+        Log.d("onButtonClicked", String.valueOf(state));
     }
 }

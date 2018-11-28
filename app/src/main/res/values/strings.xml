@@ -1,9 +1,11 @@
 <resources>
-    <string name="app_name">BrailleFeeder</string>
-    <string name="help_speech" translatable="true">"You can choose from categories business,
+    <string name="help_speech">"You can choose from categories business,
         entertainment, health, science, sports and technology with the form - category science.
         You can search news about something with the form - about Trump, about california, whatever.
         For switching to slovak language say - switch to Slovak." </string>
 
     <string name="welcome_speech">Hello from BrailleFeeder! I am ready.</string>
+    <string name="command_not_found">Command not found. For help say - help.</string>
+    <string name="taken_photo">Taken photo</string>
+    <string name="on_take_photo">Photo has been taken. Wait for processing.</string>
 </resources>
