@@ -26,6 +26,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.example.android.braillefeeder.data.ApiUtils;
+import com.example.android.braillefeeder.data.dao.ArticleRoomDatabase;
 import com.example.android.braillefeeder.data.model.Article;
 import com.example.android.braillefeeder.data.ArticleList;
 import com.example.android.braillefeeder.data.model.ArticleSettings;
@@ -52,6 +53,9 @@ public class MainActivity extends Activity implements
 
     private static final int PERMISSIONS_REQUEST_RECORD_AUDIO = 1;
     private static final int PERMISSIONS_REQUEST_CAMERA = 2;
+
+    private static final String DATABASE = "articles_db";
+    private ArticleRoomDatabase mArticleDatabase;
 
     // list of current fetched articles
     private List<Article> mArticleList;
@@ -162,6 +166,8 @@ public class MainActivity extends Activity implements
         ButterKnife.bind(this);
 
         // mPeripheralConnections = new PeripheralConnections(this);
+
+        mArticleDatabase = ArticleRoomDatabase.getDatabase(this);
 
         mNewsService = ApiUtils.getNewService();
 
@@ -400,6 +406,24 @@ public class MainActivity extends Activity implements
     }
 
     @Override
+    public void onSaveArticleCommand() {
+        if( mArticleDatabase != null) {
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    mArticleDatabase.mArticleDao().insert(mArticleList.get(mArticlePosition));
+                }
+            });
+            mTextRead.speakText("Article saved for offline.");
+        }
+    }
+
+    @Override
+    public void onLoadSavedArticleCommand() {
+        loadSavedArticles();
+    }
+
+    @Override
     public void onTextReadCompleted() {
 //        startVoiceRecorder();
     }
@@ -457,5 +481,17 @@ public class MainActivity extends Activity implements
     @Override
     public void onButtonClicked(boolean state) {
         Log.d("onButtonClicked", String.valueOf(state));
+    }
+
+    private void loadSavedArticles() {
+        if( mArticleDatabase != null) {
+            mTextRead.speakText("Loading offline articles.");
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    mArticleList = mArticleDatabase.mArticleDao().getAllArticles();
+                }
+            });
+        }
     }
 }

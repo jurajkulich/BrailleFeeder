@@ -21,6 +21,8 @@ public class VoiceControl {
         void onPreviousArticleCommand();
         void onTakePhotoCommand();
         void onCommandNotFound();
+        void onSaveArticleCommand();
+        void onLoadSavedArticleCommand();
     }
 
     private static VoiceControlListener mVoiceControlListener;
@@ -68,6 +70,15 @@ public class VoiceControl {
         else if(commandList.contains("take") && commandList.contains("photo")) {
             mVoiceControlListener.onTakePhotoCommand();
             Log.d(TAG, "TakePhoto");
+        }
+        else if(commandList.contains("save") && commandList.contains("article")) {
+            mVoiceControlListener.onSaveArticleCommand();
+            Log.d(TAG, "SaveArticle");
+        }
+        else if((commandList.contains("show") ||commandList.contains("load"))
+                && commandList.contains("saved") && commandList.contains("articles")) {
+            mVoiceControlListener.onLoadSavedArticleCommand();
+            Log.d(TAG, "onLoadSavedArticles");
         }
         else
             mVoiceControlListener.onCommandNotFound();
