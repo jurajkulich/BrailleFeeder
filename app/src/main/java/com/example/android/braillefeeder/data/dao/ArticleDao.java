@@ -17,6 +17,6 @@ public interface ArticleDao {
     @Query("DELETE FROM articles_table")
     void deleteAll();
 
-    @Query("SELECT * from articles_table")
+    @Query("SELECT * FROM articles_table")
     List<Article> getAllArticles();
 }

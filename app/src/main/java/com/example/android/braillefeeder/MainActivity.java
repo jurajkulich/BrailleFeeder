@@ -180,8 +180,17 @@ public class MainActivity extends Activity implements
 
         mVisionService = new VisionService(this, this);
 
+        mTextRead = new TextRead(this, new TextToSpeech.OnInitListener() {
+            @Override
+            public void onInit(int i) {
+                mTextRead.getTextToSpeech().setLanguage(new Locale(locale));
+                mTextRead.speakText(getResources().getString(R.string.welcome_speech));
+            }
+        }, this);
+
         locale = "us";
         loadAnswers();
+
         mButton.setOnClickListener(new View.OnClickListener() {
 
             @Override
@@ -216,16 +225,6 @@ public class MainActivity extends Activity implements
                 stopVoiceRecorder();
             }
         });
-
-        mTextRead = new TextRead(this, new TextToSpeech.OnInitListener() {
-            @Override
-            public void onInit(int i) {
-                mTextRead.getTextToSpeech().setLanguage(new Locale(locale));
-                mTextRead.speakText(getResources().getString(R.string.welcome_speech));
-            }
-        }, this);
-
-
     }
 
     @Override
@@ -322,7 +321,17 @@ public class MainActivity extends Activity implements
             };
 
 
-    public void loadAnswers() {
+    private void loadAnswers() {
+        Log.d("loadAnswers()", "loadAnswers()");
+        if( ConnectionUtil.getConnectivityStatus(this) == ConnectionUtil.TYPE_NOT_CONNECTED) {
+            mTextRead.speakText("I am not connected to internet. I will load offline articles.");
+            loadSavedArticles();
+            return;
+        }
+
+        mTextRead.speakText("I am downloading articles.");
+        Log.e("changeArticle", "loadAnswers() because articleList is Null");
+
         buildQuery();
         mNewsService.getResponse(apiMap).enqueue(new Callback<ArticleList>() {
             @Override
@@ -413,7 +422,7 @@ public class MainActivity extends Activity implements
                 public void run() {
                     mArticleDatabase.mArticleDao().insert(mArticleList.get(mArticlePosition));
                 }
-            });
+            }).start();
             mTextRead.speakText("Article saved for offline.");
         }
     }
@@ -443,8 +452,6 @@ public class MainActivity extends Activity implements
                 mArticleTextView.setText(mArticleList.get(mArticlePosition).getDescription());
             }
         } else {
-            mTextRead.speakText("I am downloading articles.");
-            Log.e("changeArticle", "loadAnswers() because articleList is Null");
             loadAnswers();
         }
     }
@@ -490,8 +497,11 @@ public class MainActivity extends Activity implements
                 @Override
                 public void run() {
                     mArticleList = mArticleDatabase.mArticleDao().getAllArticles();
+                    Log.d("loadSavedArticles()", String.valueOf(mArticleList.size()));
                 }
-            });
+            }).start();
+        } else {
+            Log.d("loadSavedArticles()", "Database is null");
         }
     }
 }
