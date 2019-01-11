@@ -153,7 +153,7 @@ public class MainActivity extends Activity implements
     Button mButtonRecorderOff;
 
     // Api key for News API
-    private final static String API_KEY_NEWS = "";
+    private final static String API_KEY_NEWS = "cb79c51392b84f89a51b4020b8a4aa90";
     // Hashmap for query build
     private Map<String, String> apiMap = new HashMap<>();
 

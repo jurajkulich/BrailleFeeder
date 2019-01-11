@@ -9,7 +9,11 @@ import com.google.android.things.pio.GpioCallback;
 import com.google.android.things.pio.PeripheralManager;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
+
+import static com.google.android.things.pio.Gpio.ACTIVE_HIGH;
+import static com.google.android.things.pio.Gpio.DIRECTION_OUT_INITIALLY_LOW;
 
 /**
  * Created by juraj on 9/21/18.
@@ -17,18 +21,15 @@ import java.util.List;
 
 public class PeripheralConnections {
 
-    private static final String buttonGPIO_TAG = "GPIO6_IO14";
-    private static final String solenoidGPIO_TAG = "GPIO2_IO07";
-
-
     private List<Gpio> mSolenoids;
-    private Gpio mGpioButton;
-    private Gpio mSolenoid;
+    private PeripheralManager peripheralManager;
 
-    private Handler mHandler = new Handler();
-    private boolean mLedState = false;
+    PeripheralConnections(PeripheralManager peripheralManagerService) {
+        this.peripheralManager = peripheralManagerService;
+        mSolenoids = new ArrayList<>();
+    }
 
-    public void openButtonsGpio(Button.OnButtonEventListener buttonEventListener) {
+    public void openSwitchButtonsGpio(Button.OnButtonEventListener buttonEventListener) {
         try {
             Button switchButton = new Button(PeripheralDefaults.getSwitchButtonGpioPin(),
                     Button.LogicState.PRESSED_WHEN_LOW);
@@ -38,62 +39,44 @@ public class PeripheralConnections {
         }
     }
 
-    private void accessGpio() {
+    public void openLengthButtonsGpio(Button.OnButtonEventListener buttonEventListener) {
         try {
-            PeripheralManager peripheralManager = PeripheralManager.getInstance();
-            mGpioButton = peripheralManager.openGpio(buttonGPIO_TAG);
-            mSolenoid = peripheralManager.openGpio(solenoidGPIO_TAG);
-
-            mGpioButton.setDirection(Gpio.DIRECTION_IN);
-            mGpioButton.setEdgeTriggerType(Gpio.EDGE_RISING);
-
-            mSolenoid.setDirection(Gpio.DIRECTION_OUT_INITIALLY_LOW);
-
-            mHandler.post(runnable);
-
+            Button lengthButton = new Button(PeripheralDefaults.getLengthButtonGpioPin(),
+                    Button.LogicState.PRESSED_WHEN_LOW);
+            lengthButton.setOnButtonEventListener(buttonEventListener);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    public void closeGpio() {
-        if( mGpioButton != null) {
-            try {
-                mGpioButton.close();
-                mGpioButton = null;
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-
-        if( mSolenoid != null) {
-            try {
-                mSolenoid.close();
-                mSolenoid = null;
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+    public void openVolumeButtonsGpio(Button.OnButtonEventListener buttonEventListener) {
+        try {
+            Button volumeButton = new Button(PeripheralDefaults.getVolumeButtonGpioPin(),
+                    Button.LogicState.PRESSED_WHEN_LOW);
+            volumeButton.setOnButtonEventListener(buttonEventListener);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
-    private Runnable runnable = new Runnable() {
-        @Override
-        public void run() {
-            // Exit Runnable if the GPIO is already closed
-            if (mSolenoid == null) {
-                return;
-            }
-            try {
-                // Toggle the GPIO state
-                mLedState = !mLedState;
-                mSolenoid.setValue(mLedState);
+    public void openSolenoidsGpio() {
+        mSolenoids.add(configureGpioPin(PeripheralDefaults.getFirstSolenoidGpioPin()));
+        mSolenoids.add(configureGpioPin(PeripheralDefaults.getSecondSolenoidGpioPin()));
+        mSolenoids.add(configureGpioPin(PeripheralDefaults.getThirdSolenoidGpioPin()));
+        mSolenoids.add(configureGpioPin(PeripheralDefaults.getFourthSolenoidGpioPin()));
+        mSolenoids.add(configureGpioPin(PeripheralDefaults.getFifthSolenoidGpioPin()));
+        mSolenoids.add(configureGpioPin(PeripheralDefaults  .getSixthSolenoidGpioPin()));
+    }
 
-                // Reschedule the same runnable in {#INTERVAL_BETWEEN_BLINKS_MS} milliseconds
-                mHandler.postDelayed(runnable, 3000);
-                Log.e("Peripheral", String.valueOf(mLedState));
-            } catch (IOException e) {
-                Log.e("aaaa", "Error on PeripheralIO API", e);
-            }
+    private Gpio configureGpioPin(String pin) {
+        Gpio gpioPin = null;
+        try {
+            gpioPin = peripheralManager.openGpio(pin);
+            gpioPin.setDirection(DIRECTION_OUT_INITIALLY_LOW);
+            gpioPin.setActiveType(ACTIVE_HIGH);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-    };
+        return gpioPin;
+    }
 }

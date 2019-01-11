@@ -6,7 +6,7 @@ public class PeripheralDefaults {
         return "GPIO6_IO14";
     }
 
-    static String getSecondsSolenoidGpioPin() {
+    static String getSecondSolenoidGpioPin() {
         return "GPIO6_IO15";
     }
 
