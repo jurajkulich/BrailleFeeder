@@ -1,8 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="welcome_speech">Zdraví ťa BrailleFeeder! Som pripravený.</string>
-    <string name="command_not_found">Takýto príkaz nepoznám. Pre nápovedu povedz - pomoc.</string>
+    <string name="command_not_found">Takýto príkaz nepoznám. Pre nápovedu povedz - help.</string>
     <string name="taken_photo">Odofotená fotorafia</string>
     <string name="on_take_photo">Snímok bol vytvorený. Počkajte na spracovanie.</string>
-    <string name="help_speech">Môžete si vybrať z kategórii biznis, zábava, zdravie, veda, šport a technológie. Príkaz je vo forme - kategória veda. Do zmeny jazyka povedzte - chcem angličtinu.</string>
+    <string name="help_speech">Môžete si vybrať z kategórii business, entertainment, health, science, sports and technology. Príkaz je vo forme - kategória veda. Do zmeny jazyka povedzte - switch to english.</string>
+    <string name="volume_set_up">Hlasitosť bola nastavená na </string>
+    <string name="article_saved">Článok bol uložený do offline pamäte.</string>
+    <string name="not_connected">Nie som pripojený k internetu. Načitávam články z offline pamäte.</string>
+    <string name="downloading_articles">Sťahujem články z internetu.</string>
 </resources>

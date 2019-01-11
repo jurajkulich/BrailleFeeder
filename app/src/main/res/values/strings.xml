@@ -2,10 +2,16 @@
     <string name="help_speech">"You can choose from categories business,
         entertainment, health, science, sports and technology with the form - category science.
         You can search news about something with the form - about Trump, about california, whatever.
-        For switching to slovak language say - switch to Slovak." </string>
+        For switching to slovak language say - switch to Slovak."
+
+    </string>
 
     <string name="welcome_speech">Hello from BrailleFeeder! I am ready.</string>
     <string name="command_not_found">Command not found. For help say - help.</string>
     <string name="taken_photo">Taken photo</string>
     <string name="on_take_photo">Photo has been taken. Wait for processing.</string>
+    <string name="volume_set_up">Volume has been set up to</string>
+    <string name="article_saved">Article has been saved for offline.</string>
+    <string name="not_connected">I am not connected to internet. I will load offline articles.</string>
+    <string name="downloading_articles">I am downloading articles.</string>
 </resources>

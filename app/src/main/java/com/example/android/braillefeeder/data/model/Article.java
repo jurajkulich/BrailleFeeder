@@ -14,6 +14,8 @@ import androidx.room.Entity;
 import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
 
+// Basic class for one news article
+// We are using annotations for DAO and Retrofit
 @Entity(tableName = "articles_table")
 public class Article {
 

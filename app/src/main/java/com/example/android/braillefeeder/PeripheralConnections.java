@@ -3,11 +3,13 @@ package com.example.android.braillefeeder;
 import android.os.Handler;
 import android.util.Log;
 
+import com.google.android.things.contrib.driver.button.Button;
 import com.google.android.things.pio.Gpio;
 import com.google.android.things.pio.GpioCallback;
 import com.google.android.things.pio.PeripheralManager;
 
 import java.io.IOException;
+import java.util.List;
 
 /**
  * Created by juraj on 9/21/18.
@@ -15,23 +17,25 @@ import java.io.IOException;
 
 public class PeripheralConnections {
 
-    public interface PeripheralConnectionsListener {
-        void onButtonClicked(boolean state);
-    }
-
     private static final String buttonGPIO_TAG = "GPIO6_IO14";
     private static final String solenoidGPIO_TAG = "GPIO2_IO07";
 
-    private PeripheralConnectionsListener mConnectionsListener;
+
+    private List<Gpio> mSolenoids;
     private Gpio mGpioButton;
     private Gpio mSolenoid;
 
     private Handler mHandler = new Handler();
     private boolean mLedState = false;
 
-    public PeripheralConnections(PeripheralConnectionsListener listener) {
-        mConnectionsListener = listener;
-        accessGpio();
+    public void openButtonsGpio(Button.OnButtonEventListener buttonEventListener) {
+        try {
+            Button switchButton = new Button(PeripheralDefaults.getSwitchButtonGpioPin(),
+                    Button.LogicState.PRESSED_WHEN_LOW);
+            switchButton.setOnButtonEventListener(buttonEventListener);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private void accessGpio() {
@@ -42,7 +46,6 @@ public class PeripheralConnections {
 
             mGpioButton.setDirection(Gpio.DIRECTION_IN);
             mGpioButton.setEdgeTriggerType(Gpio.EDGE_RISING);
-            mGpioButton.registerGpioCallback(mGpioCallback);
 
             mSolenoid.setDirection(Gpio.DIRECTION_OUT_INITIALLY_LOW);
 
@@ -72,26 +75,6 @@ public class PeripheralConnections {
             }
         }
     }
-
-    private GpioCallback mGpioCallback = new GpioCallback() {
-
-        @Override
-        public boolean onGpioEdge(Gpio gpio) {
-            try {
-                if (gpio.getValue()) {
-
-                    mConnectionsListener.onButtonClicked(true);
-
-                } else {
-                    mConnectionsListener.onButtonClicked(false);
-                }
-
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            return true;
-        }
-    };
 
     private Runnable runnable = new Runnable() {
         @Override

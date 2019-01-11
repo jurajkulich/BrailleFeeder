@@ -1,4 +1,4 @@
-package com.example.android.braillefeeder.data;
+package com.example.android.braillefeeder.data.model;
 
 import com.example.android.braillefeeder.data.model.Article;
 import com.google.gson.annotations.SerializedName;

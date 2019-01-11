@@ -5,7 +5,7 @@ android {
     compileSdkVersion 28
     defaultConfig {
         applicationId "com.example.android.braillefeeder"
-        minSdkVersion 26
+        minSdkVersion 27
         targetSdkVersion 28
         versionCode 1
         versionName "1.0"
@@ -79,6 +79,8 @@ dependencies {
 
     implementation 'com.jakewharton:butterknife:9.0.0-SNAPSHOT'
     annotationProcessor 'com.jakewharton:butterknife-compiler:9.0.0-SNAPSHOT'
+
+    implementation 'com.google.android.things.contrib:driver-button:1.0'
 
     implementation "io.grpc:grpc-okhttp:$grpcVersion"
     implementation ("io.grpc:grpc-protobuf-lite:$grpcVersion")

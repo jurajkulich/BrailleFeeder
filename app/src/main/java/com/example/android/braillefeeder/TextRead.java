@@ -3,8 +3,11 @@ package com.example.android.braillefeeder;
 import android.content.Context;
 import android.speech.tts.TextToSpeech;
 import android.speech.tts.UtteranceProgressListener;
+import android.util.Log;
 
 import com.example.android.braillefeeder.data.model.Article;
+
+import java.util.Locale;
 
 /**
  * Created by Juraj on 3/19/2018.
@@ -80,5 +83,14 @@ public class TextRead {
 
     public void setTextToSpeech(TextToSpeech textToSpeech) {
         mTextToSpeech = textToSpeech;
+    }
+
+    public void changeLanguage(Locale locale) {
+        if( mTextToSpeech.isLanguageAvailable(locale) < 0) {
+            Log.d("TextRead", "Locale Unvailaible");
+            Log.d("TextRead", Locale.getAvailableLocales().toString());
+
+        }
+        mTextToSpeech.setLanguage(locale);
     }
 }
