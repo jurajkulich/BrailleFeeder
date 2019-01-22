@@ -25,7 +25,7 @@ public class CameraService {
 
     // Size of taken photo
     private static final int IMAGE_WIDTH = 1280;
-    private static final int IMAGE_HEIGHT = 960;
+    private static final int IMAGE_HEIGHT = 720;
 
     private CameraDevice mCameraDevice;
     private CameraCaptureSession mCameraCaptureSession;

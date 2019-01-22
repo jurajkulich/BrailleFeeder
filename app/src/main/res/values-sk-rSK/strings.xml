@@ -9,4 +9,8 @@
     <string name="article_saved">Článok bol uložený do offline pamäte.</string>
     <string name="not_connected">Nie som pripojený k internetu. Načitávam články z offline pamäte.</string>
     <string name="downloading_articles">Sťahujem články z internetu.</string>
+    <string name="vision_answer">Našiel som tieto veci:</string>
+    <string name="vision_nothing">Nič</string>
+    <string name="vision_text">Našiel som tento text</string>
+    <string name="vision_no_text">Nenašiel som žiadny text</string>
 </resources>

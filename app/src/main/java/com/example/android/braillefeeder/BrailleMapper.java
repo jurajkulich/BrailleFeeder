@@ -3,7 +3,7 @@ package com.example.android.braillefeeder;
 import java.util.ArrayList;
 import java.util.List;
 
-public class BrailleMapper {
+public class    BrailleMapper {
 
     BrailleMapper() {}
 

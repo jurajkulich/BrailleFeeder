@@ -18,14 +18,21 @@ import com.google.api.services.vision.v1.model.BatchAnnotateImagesRequest;
 import com.google.api.services.vision.v1.model.BatchAnnotateImagesResponse;
 import com.google.api.services.vision.v1.model.EntityAnnotation;
 import com.google.api.services.vision.v1.model.Feature;
-import com.google.protobuf.Type;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+
+import okhttp3.HttpUrl;
+import okhttp3.MultipartBody;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
 public class VisionService {
 
@@ -36,8 +43,8 @@ public class VisionService {
         void onVisionCompleted(String result);
     }
 
-    static VisionServiceListener mVisionServiceListener;
-    private Context mContext;
+    private static VisionServiceListener mVisionServiceListener;
+    private static Context mContext;
 
     public VisionService(Context context, VisionServiceListener listener) {
         mContext = context;
@@ -138,32 +145,68 @@ public class VisionService {
     }
 
     private static String convertResponseToString(BatchAnnotateImagesResponse response) {
-        StringBuilder message = new StringBuilder("I found these things:\n\n");
+        StringBuilder message = new StringBuilder(mContext.getString(R.string.vision_answer));
 
         List<EntityAnnotation> textAnnotations = response.getResponses().get(0).getTextAnnotations();
         List<EntityAnnotation> labelAnnotations = response.getResponses().get(0).getLabelAnnotations();
         if (labelAnnotations != null) {
+            StringBuilder labels = new StringBuilder();
             for (EntityAnnotation label : labelAnnotations) {
                 // message.append(String.format(Locale.US, "%.3f: %s", label.getScore(), label.getDescription()));
-                message.append(String.format(Locale.US, "%s", label.getDescription()));
-                message.append("\n");
+                labels.append(String.format(Locale.US, "%s", label.getDescription()));
+//                message.append(String.format(Locale.US, "%s", label.getDescription()));
+               labels.append(",");
+            }
+            if( MainActivity.getLocale().equals("sk")) {
+                Log.d("VisionService", "translating labels: " + MainActivity.getLocale());
+                message.append(translateLabels(labels.toString()));
+            } else {
+                Log.d("VisionService", "translating labels: " + MainActivity.getLocale());
+                message.append(labels.toString());
             }
         } else {
-            message.append("nothing");
+            message.append(mContext.getString(R.string.vision_nothing));
         }
 
         if (textAnnotations != null) {
-            message.append("I found this text:\n\n");
+            message.append(mContext.getString(R.string.vision_text));
+            message.append("\n");
+
             for (EntityAnnotation label : textAnnotations) {
-                // message.append(String.format(Locale.US, "%.3f: %s", label.getScore(), label.getDescription()));
-                message.append(String.format(Locale.US, "%s", label.getDescription()));
-                message.append("\n");
+                 message.append(String.format(Locale.US, "%.3f: %s", label.getScore(), label.getDescription()));
             }
         } else {
-            message.append("I found no text.");
+            message.append(mContext.getString(R.string.vision_no_text));
         }
 
         return message.toString();
     }
 
+    public static String translateLabels(String labels) {
+        OkHttpClient client = new OkHttpClient();
+        HttpUrl url = HttpUrl.parse("https://translation.googleapis.com/language/translate/v2").newBuilder()
+                .addQueryParameter("key", "AIzaSyC8brMCQq96z5INuEzCvmH0DYKUUFETizg")
+                .addQueryParameter("q", labels)
+                .addQueryParameter("target", "sk")
+                .addQueryParameter("source", "en")
+                .build();
+        Log.d("traslateLabels", labels);
+        Log.d("traslateLabels", url.toString());
+        Request request = new Request.Builder()
+                .url(url)
+                .build();
+        try {
+            Response response = client.newCall(request).execute();
+            try {
+                JSONObject json = new JSONObject(response.body().string());
+                String respon = json.getJSONObject("data").getJSONArray("translations").getJSONObject(0).getString("translatedText");
+                return respon;
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return "";
+    }
 }

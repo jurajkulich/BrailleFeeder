@@ -157,7 +157,7 @@ public class MainActivity extends Activity implements
     // Hashmap for query build
     private Map<String, String> apiMap = new HashMap<>();
 
-    private SharedPreferences mSharedPreferences;
+    private static SharedPreferences mSharedPreferences;
     private String mLocale;
 
     // current position from fetched articles
@@ -260,7 +260,7 @@ public class MainActivity extends Activity implements
         mCameraService.initializeCamera(this, mOnImageAvailableListener);
 
         mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-        mLocale = mSharedPreferences.getString("defaultLanguage", "us");
+        mLocale = getLocale();
         onLocaleChangeCommand(mLocale);
 
         // We need permissions for Camera - photo capturing, and Audio - voice control
@@ -551,5 +551,9 @@ public class MainActivity extends Activity implements
         Log.d("mainActivity()","setLocale - locale changed to: " + mLocale);
         resources.updateConfiguration(configuration, null);
         mTextRead.changeLanguage(locale);
+    }
+
+    public static String getLocale() {
+        return mSharedPreferences.getString("defaultLanguage", "us");
     }
 }

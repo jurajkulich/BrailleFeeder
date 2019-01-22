@@ -14,4 +14,8 @@
     <string name="article_saved">Article has been saved for offline.</string>
     <string name="not_connected">I am not connected to internet. I will load offline articles.</string>
     <string name="downloading_articles">I am downloading articles.</string>
+    <string name="vision_answer">I found these things:</string>
+    <string name="vision_nothing">nothing</string>
+    <string name="vision_text">I found this text:</string>
+    <string name="vision_no_text">I found no text.</string>
 </resources>
