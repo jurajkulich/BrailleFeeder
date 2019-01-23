@@ -1,4 +1,4 @@
-package com.example.android.braillefeeder;
+package com.example.android.braillefeeder.apis;
 
 import android.app.Service;
 import android.content.Context;
@@ -12,6 +12,7 @@ import androidx.annotation.Nullable;
 import android.text.TextUtils;
 import android.util.Log;
 
+import com.example.android.braillefeeder.R;
 import com.google.auth.Credentials;
 import com.google.auth.oauth2.AccessToken;
 import com.google.auth.oauth2.GoogleCredentials;

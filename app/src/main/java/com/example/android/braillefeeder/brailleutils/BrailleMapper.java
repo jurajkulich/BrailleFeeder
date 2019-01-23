@@ -1,4 +1,4 @@
-package com.example.android.braillefeeder;
+package com.example.android.braillefeeder.brailleutils;
 
 import java.util.ArrayList;
 import java.util.List;

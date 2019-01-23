@@ -1,10 +1,12 @@
-package com.example.android.braillefeeder;
+package com.example.android.braillefeeder.apis;
 
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.os.AsyncTask;
 import android.util.Log;
 
+import com.example.android.braillefeeder.MainActivity;
+import com.example.android.braillefeeder.R;
 import com.google.api.client.extensions.android.http.AndroidHttp;
 import com.google.api.client.googleapis.json.GoogleJsonResponseException;
 import com.google.api.client.http.HttpTransport;

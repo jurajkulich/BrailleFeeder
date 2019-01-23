@@ -27,6 +27,8 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.example.android.braillefeeder.apis.SpeechToText;
+import com.example.android.braillefeeder.apis.VisionService;
 import com.example.android.braillefeeder.data.ApiUtils;
 import com.example.android.braillefeeder.data.model.ArticleList;
 import com.example.android.braillefeeder.data.dao.ArticleRoomDatabase;
