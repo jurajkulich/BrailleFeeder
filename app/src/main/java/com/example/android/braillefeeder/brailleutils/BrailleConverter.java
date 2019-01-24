@@ -9,7 +9,7 @@ public class BrailleConverter {
 
     }
 
-    public List<String> convertFromWords(String... words) {
+    public static List<String> convertFromWords(String... words) {
         List<String> braille = new ArrayList<>();
         for( int i = 0; i < words.length; i++) {
             braille.addAll(convertFromWord(words[i]));
@@ -20,7 +20,7 @@ public class BrailleConverter {
         return braille;
     }
 
-    public List<String> convertFromWord(String text) {
+    public static List<String> convertFromWord(String text) {
         List<String> braille = new ArrayList<>();
         for( int i = 0; i < text.length(); i++) {
             braille.add(Braille.fromKey(Character.toLowerCase(text.charAt(i))).getValue());

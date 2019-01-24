@@ -65,7 +65,7 @@ public class PeripheralConnections {
         mSolenoids.add(configureGpioPin(PeripheralDefaults.getThirdSolenoidGpioPin()));
         mSolenoids.add(configureGpioPin(PeripheralDefaults.getFourthSolenoidGpioPin()));
         mSolenoids.add(configureGpioPin(PeripheralDefaults.getFifthSolenoidGpioPin()));
-        mSolenoids.add(configureGpioPin(PeripheralDefaults  .getSixthSolenoidGpioPin()));
+        mSolenoids.add(configureGpioPin(PeripheralDefaults.getSixthSolenoidGpioPin()));
     }
 
     private Gpio configureGpioPin(String pin) {
@@ -74,9 +74,21 @@ public class PeripheralConnections {
             gpioPin = peripheralManager.openGpio(pin);
             gpioPin.setDirection(DIRECTION_OUT_INITIALLY_LOW);
             gpioPin.setActiveType(ACTIVE_HIGH);
+            Log.d("configureGpio", gpioPin.getName());
+            Log.d("configureGpio", String.valueOf(gpioPin.getValue()));
         } catch (IOException e) {
             e.printStackTrace();
         }
         return gpioPin;
+    }
+
+    public void sendGpioValues(String sequence) {
+        for (int i = 0; i < mSolenoids.size(); i++) {
+            try {
+                mSolenoids.get(i).setValue((int) sequence.charAt(i) == '1');
+            } catch (IOException error) {
+                Log.e(error.getMessage(), "There was an error configuring GPIO pins");
+            }
+        }
     }
 }

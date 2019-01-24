@@ -29,12 +29,14 @@ import android.widget.TextView;
 
 import com.example.android.braillefeeder.apis.SpeechToText;
 import com.example.android.braillefeeder.apis.VisionService;
+import com.example.android.braillefeeder.brailleutils.BrailleConverter;
 import com.example.android.braillefeeder.data.ApiUtils;
 import com.example.android.braillefeeder.data.model.ArticleList;
 import com.example.android.braillefeeder.data.dao.ArticleRoomDatabase;
 import com.example.android.braillefeeder.data.model.Article;
 import com.example.android.braillefeeder.data.model.ArticleSettings;
 import com.example.android.braillefeeder.remote.NewsService;
+import com.google.android.things.pio.PeripheralManager;
 
 import java.nio.ByteBuffer;
 import java.util.HashMap;
@@ -58,6 +60,11 @@ public class MainActivity extends Activity implements
 
     private static final int PERMISSIONS_REQUEST_RECORD_AUDIO = 1;
     private static final int PERMISSIONS_REQUEST_CAMERA = 2;
+
+    private static final int DEFAULT_DELAY = 500;
+    private static final String OFF_SOLENOID_STATE = "000000";
+    private static final String ON_SOLENOID_STATE = "111111";
+
 
     private static final String DATABASE = "articles_db";
     private ArticleRoomDatabase mArticleDatabase;
@@ -173,7 +180,8 @@ public class MainActivity extends Activity implements
         // ButterKnife binds all views to variables
         ButterKnife.bind(this);
 
-        // mPeripheralConnections = new PeripheralConnections(this);
+        mPeripheralConnections = new PeripheralConnections(PeripheralManager.getInstance());
+        mPeripheralConnections.openSolenoidsGpio();
 
         // setVolumeControlStream set default control stream to music, with
         // this setting we can change volume of speaking
@@ -353,7 +361,7 @@ public class MainActivity extends Activity implements
                     if( response.body() != null) {
                         mArticleList = response.body().getArticleList();
                     }
-                    mArticlePosition = 0;
+                    mArticlePosition = -1;
                 }else {
                     Log.d("loadAnswers", response.raw().request().url().toString());
                     Log.e("MainActivity", "Response unsuccesful: " + response.code());
@@ -557,5 +565,21 @@ public class MainActivity extends Activity implements
 
     public static String getLocale() {
         return mSharedPreferences.getString("defaultLanguage", "us");
+    }
+
+    private void showInBraille(Article article) {
+        BrailleConverter.convertFromWords(article.getTitle(), article.getDescription());
+    }
+
+    public void showSequence(String sequence) {
+        mPeripheralConnections.sendGpioValues(sequence);
+    }
+
+    public void resetSolenoids() {
+        mPeripheralConnections.sendGpioValues(OFF_SOLENOID_STATE);
+    }
+
+    public void prepareSolenoids() {
+        mPeripheralConnections.sendGpioValues(ON_SOLENOID_STATE);
     }
 }
