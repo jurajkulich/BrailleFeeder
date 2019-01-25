@@ -16,6 +16,7 @@ import android.media.AudioManager;
 import android.media.Image;
 import android.media.ImageReader;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
 import android.os.LocaleList;
 import android.preference.PreferenceManager;
@@ -64,6 +65,9 @@ public class MainActivity extends Activity implements
     private static final int DEFAULT_DELAY = 500;
     private static final String OFF_SOLENOID_STATE = "000000";
     private static final String ON_SOLENOID_STATE = "111111";
+
+    private Handler brailleHandler = new Handler();
+    private Runnable brailleRunnable;
 
 
     private static final String DATABASE = "articles_db";
@@ -490,6 +494,7 @@ public class MainActivity extends Activity implements
                 mArticlePosition += pos;
                 Log.d("changeArticle", mArticlePosition + "");
                 mTextRead.speakText(mArticleList.get(mArticlePosition));
+                showInBraille(mArticleList.get(mArticlePosition));
                 mArticleTextView.setText(mArticleList.get(mArticlePosition).getDescription());
             }
         } else {
@@ -568,7 +573,17 @@ public class MainActivity extends Activity implements
     }
 
     private void showInBraille(Article article) {
-        BrailleConverter.convertFromWords(article.getTitle(), article.getDescription());
+        List<String> words = BrailleConverter.convertFromWords(article.getTitle(), article.getDescription());
+        for( final String word: words) {
+            brailleRunnable = new Runnable() {
+                @Override
+                public void run() {
+                    mPeripheralConnections.sendGpioValues(word);
+                    brailleHandler.postDelayed(this, DEFAULT_DELAY);
+                }
+            };
+//            brailleHandler.postDelayed(brailleRunnable, DEFAULT_DELAY);
+        }
     }
 
     public void showSequence(String sequence) {

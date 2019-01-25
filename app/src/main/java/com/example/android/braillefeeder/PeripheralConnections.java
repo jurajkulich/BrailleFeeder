@@ -83,6 +83,7 @@ public class PeripheralConnections {
     }
 
     public void sendGpioValues(String sequence) {
+        Log.d("sendGpio", sequence);
         for (int i = 0; i < mSolenoids.size(); i++) {
             try {
                 mSolenoids.get(i).setValue((int) sequence.charAt(i) == '1');
