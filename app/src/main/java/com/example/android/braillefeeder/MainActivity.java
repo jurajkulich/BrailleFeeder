@@ -61,8 +61,10 @@ public class MainActivity extends Activity implements
 
     private static final int PERMISSIONS_REQUEST_RECORD_AUDIO = 1;
     private static final int PERMISSIONS_REQUEST_CAMERA = 2;
+    private static final int PERMISSION_REQUEST_BLUETOOTH = 3;
+    private static final int PERMISSION_REQUEST_LOCATION = 4;
 
-    private static final int DEFAULT_DELAY = 500;
+    private static final int DEFAULT_DELAY = 1000;
     private static final String OFF_SOLENOID_STATE = "000000";
     private static final String ON_SOLENOID_STATE = "111111";
 
@@ -184,6 +186,9 @@ public class MainActivity extends Activity implements
         // ButterKnife binds all views to variables
         ButterKnife.bind(this);
 
+//        Intent intent = new Intent(this, BluetoothActivity.class);
+//        startActivity(intent);
+
         mPeripheralConnections = new PeripheralConnections(PeripheralManager.getInstance());
         mPeripheralConnections.openSolenoidsGpio();
 
@@ -281,12 +286,16 @@ public class MainActivity extends Activity implements
         int permission_all = 1;
         String[] permissions = {
                 Manifest.permission.RECORD_AUDIO,
-                Manifest.permission.CAMERA
+                Manifest.permission.CAMERA,
+                Manifest.permission.ACCESS_COARSE_LOCATION,
+                Manifest.permission.BLUETOOTH_ADMIN,
+                Manifest.permission.BLUETOOTH,
+                Manifest.permission.BLUETOOTH_PRIVILEGED,
         };
         if( !hasPermissions(permissions)) {
             ActivityCompat.requestPermissions(this, permissions, permission_all);
         } else {
-            startVoiceRecorder();
+//            startVoiceRecorder();
         }
 
     }
@@ -493,7 +502,7 @@ public class MainActivity extends Activity implements
                 Log.d("changeArticle", mArticlePosition + "");
                 mArticlePosition += pos;
                 Log.d("changeArticle", mArticlePosition + "");
-                mTextRead.speakText(mArticleList.get(mArticlePosition));
+//                mTextRead.speakText(mArticleList.get(mArticlePosition));
                 showInBraille(mArticleList.get(mArticlePosition));
                 mArticleTextView.setText(mArticleList.get(mArticlePosition).getDescription());
             }
@@ -573,16 +582,16 @@ public class MainActivity extends Activity implements
     }
 
     private void showInBraille(Article article) {
-        List<String> words = BrailleConverter.convertFromWords(article.getTitle(), article.getDescription());
-        for( final String word: words) {
-            brailleRunnable = new Runnable() {
+        final List<String> words = BrailleConverter.convertFromWords(article.getTitle(), article.getDescription());
+        brailleHandler = new Handler();
+        for( int i = 0; i < words.size(); i++) {
+            final String word = words.get(i);
+            brailleHandler.postDelayed(new Runnable() {
                 @Override
                 public void run() {
                     mPeripheralConnections.sendGpioValues(word);
-                    brailleHandler.postDelayed(this, DEFAULT_DELAY);
                 }
-            };
-//            brailleHandler.postDelayed(brailleRunnable, DEFAULT_DELAY);
+            }, DEFAULT_DELAY * i);
         }
     }
 

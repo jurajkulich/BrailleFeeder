@@ -46,6 +46,8 @@ public class VoiceControl {
                 mVoiceControlListener.onLocaleChangeCommand("sk");
             } else if( command.contains("english")) {
                 mVoiceControlListener.onLocaleChangeCommand(Locale.getDefault().toString());
+            } else {
+                mVoiceControlListener.onCommandNotFound();
             }
         }
         else if( command.contains("next") && command.contains("article")) {

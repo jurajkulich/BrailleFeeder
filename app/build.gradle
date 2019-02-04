@@ -54,12 +54,13 @@ protobuf {
     }
     generateProtoTasks {
         all().each {
-            task -> task.plugins {
-                javalite {}
-                grpc {
-                    option 'lite'
+            task ->
+                task.plugins {
+                    javalite {}
+                    grpc {
+                        option 'lite'
+                    }
                 }
-            }
         }
     }
     generatedFilesBaseDir = "$projectDir/build/generated"
@@ -74,12 +75,13 @@ dependencies {
     implementation 'androidx.annotation:annotation:1.0.0'
 
     // Tests
+    implementation 'androidx.appcompat:appcompat:1.0.0-alpha1'
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'androidx.test:runner:1.1.0'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.1.0'
 
     // Android things
-    compileOnly     'com.google.android.things:androidthings:+'
+    compileOnly 'com.google.android.things:androidthings:+'
 
     implementation 'com.squareup.okhttp3:okhttp:3.11.0'
 
@@ -93,7 +95,7 @@ dependencies {
     implementation 'com.google.android.things.contrib:driver-button:1.0'
 
     implementation "io.grpc:grpc-okhttp:$grpcVersion"
-    implementation ("io.grpc:grpc-protobuf-lite:$grpcVersion")
+    implementation("io.grpc:grpc-protobuf-lite:$grpcVersion")
     implementation "io.grpc:grpc-stub:$grpcVersion"
     implementation 'javax.annotation:javax.annotation-api:1.2'
 
@@ -103,15 +105,15 @@ dependencies {
         exclude module: 'httpclient'
     }
 
-    implementation ('com.google.api-client:google-api-client-android:1.23.0') {
+    implementation('com.google.api-client:google-api-client-android:1.23.0') {
         exclude module: 'guava-jdk5'
         exclude module: 'httpclient'
     }
-    implementation ('com.google.http-client:google-http-client-gson:1.23.0') {
+    implementation('com.google.http-client:google-http-client-gson:1.23.0') {
         exclude module: 'httpclient'
         exclude module: 'guava-jdk5'
     }
-    implementation ('com.google.apis:google-api-services-vision:v1-rev369-1.23.0') {
+    implementation('com.google.apis:google-api-services-vision:v1-rev369-1.23.0') {
         exclude module: 'guava-jdk5'
     }
 
@@ -127,4 +129,3 @@ task copySecretKey(type: Copy) {
     rename secretKey.getName(), "credentials.json"
 }
 preBuild.dependsOn(copySecretKey)
-
