@@ -288,16 +288,14 @@ public class MainActivity extends Activity implements
                 Manifest.permission.RECORD_AUDIO,
                 Manifest.permission.CAMERA,
                 Manifest.permission.ACCESS_COARSE_LOCATION,
-                Manifest.permission.BLUETOOTH_ADMIN,
-                Manifest.permission.BLUETOOTH,
                 Manifest.permission.BLUETOOTH_PRIVILEGED,
+                Manifest.permission.ACCESS_FINE_LOCATION
         };
         if( !hasPermissions(permissions)) {
             ActivityCompat.requestPermissions(this, permissions, permission_all);
         } else {
 //            startVoiceRecorder();
         }
-
     }
 
     @Override
@@ -357,6 +355,8 @@ public class MainActivity extends Activity implements
     private void loadAnswers() {
         Log.d("loadAnswers()", "loadAnswers()");
         if( ConnectionUtil.getConnectivityStatus(this) == ConnectionUtil.TYPE_NOT_CONNECTED) {
+            Log.e("loadAnswers()", "not connected to internet");
+
             mTextRead.speakText(getString(R.string.not_connected));
             loadSavedArticles();
             return;
@@ -586,12 +586,13 @@ public class MainActivity extends Activity implements
         brailleHandler = new Handler();
         for( int i = 0; i < words.size(); i++) {
             final String word = words.get(i);
-            brailleHandler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    mPeripheralConnections.sendGpioValues(word);
-                }
-            }, DEFAULT_DELAY * i);
+//            brailleHandler.postDelayed(new Runnable() {
+//                @Override
+//                public void run() {
+//                    Log.d("configureGpio", word);
+//                    mPeripheralConnections.sendGpioValues(word);
+//                }
+//            }, DEFAULT_DELAY * i);
         }
     }
 

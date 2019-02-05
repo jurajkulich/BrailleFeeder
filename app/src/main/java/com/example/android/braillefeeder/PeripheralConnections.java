@@ -74,8 +74,6 @@ public class PeripheralConnections {
             gpioPin = peripheralManager.openGpio(pin);
             gpioPin.setDirection(DIRECTION_OUT_INITIALLY_LOW);
             gpioPin.setActiveType(ACTIVE_HIGH);
-            Log.d("configureGpio", gpioPin.getName());
-            Log.d("configureGpio", String.valueOf(gpioPin.getValue()));
         } catch (IOException e) {
             e.printStackTrace();
         }

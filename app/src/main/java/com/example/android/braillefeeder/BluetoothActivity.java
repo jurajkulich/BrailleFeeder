@@ -36,7 +36,7 @@ public class BluetoothActivity extends Activity {
     private static final String ADAPTER_FRIENDLY_NAME = "My Android Things device";
     private static final int REQUEST_ENABLE_BT = 1;
     // Stops scanning after 10 seconds.
-    private static final long SCAN_PERIOD = 10000;
+    private static final long SCAN_PERIOD = 5000;
 
     private BluetoothAdapter mBluetoothAdapter;
     private boolean mScanning;
@@ -72,7 +72,7 @@ public class BluetoothActivity extends Activity {
             Log.e(TAG, "Bluetooth adapter not available or not enabled.");
             return;
         }
-        //setupBTProfiles();
+//        setupBTProfiles();
         Log.d(TAG, "Set up Bluetooth Adapter name and profile");
         mBluetoothAdapter.setName(ADAPTER_FRIENDLY_NAME);
         scanLeDevice();
@@ -101,18 +101,19 @@ public class BluetoothActivity extends Activity {
                     if(device != null){
                         final String deviceName = device.getName();
                         if (deviceName != null && deviceName.length() > 0) {
-                            //Log.d(TAG, deviceName);
                             if(deviceName.equals(ANDROID_DEVICE_NAME)){
                                 isDeviceFound = true;
                                 mDeviceAddress = device.getAddress();
+                                Log.d(TAG, mDeviceAddress);
                             }
                         }
                     }
 
                     if(isDeviceFound && !mConnected){
                         Intent gattServiceIntent = new Intent(BluetoothActivity.this, BluetoothLeService.class);
-                        bindService(gattServiceIntent, mServiceConnection, BIND_AUTO_CREATE);
+                        getApplicationContext().bindService(gattServiceIntent, mServiceConnection, BIND_AUTO_CREATE);
                         mConnected = true;
+                        Log.d(TAG, "ServiceBind");
                     }
                 }
             };
@@ -149,6 +150,7 @@ public class BluetoothActivity extends Activity {
             Boolean result = mBluetoothLeService.connect(mDeviceAddress);
             Log.d(TAG, "Connect request result=" + result);
             mConnected = true;
+
             if(mScanning) {
                 mScanning = false;
                 mBluetoothAdapter.stopLeScan(mLeScanCallback);
@@ -170,6 +172,8 @@ public class BluetoothActivity extends Activity {
     private final BroadcastReceiver mGattUpdateReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
+            Log.d(TAG, "OnRecieve");
+
             final String action = intent.getAction();
             if (BluetoothLeService.ACTION_GATT_CONNECTED.equals(action)) {
                 mConnected = true;
@@ -224,7 +228,7 @@ public class BluetoothActivity extends Activity {
     @Override
     protected void onStart() {
         super.onStart();
-        registerReceiver(mGattUpdateReceiver, makeGattUpdateIntentFilter());
+        getApplicationContext().registerReceiver(mGattUpdateReceiver, makeGattUpdateIntentFilter());
     }
 
     /**
@@ -234,14 +238,12 @@ public class BluetoothActivity extends Activity {
     @Override
     protected void onPause(){
         super.onPause();
-        unregisterReceiver(mGattUpdateReceiver);
+        getApplicationContext().unregisterReceiver(mGattUpdateReceiver);
     }
 
     @Override
     protected void onDestroy(){
         super.onDestroy();
-
-
         unbindService(mServiceConnection);
         mBluetoothLeService = null;
     }
