@@ -13,4 +13,6 @@
     <string name="vision_nothing">Nič</string>
     <string name="vision_text">Našiel som tento text</string>
     <string name="vision_no_text">Nenašiel som žiadny text</string>
+    <string name="volume_turned_off">Zvuk bol vypnutý.</string>
+    <string name="volume_increased">Hlasitosť bola zvýšená.</string>
 </resources>

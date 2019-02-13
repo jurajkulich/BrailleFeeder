@@ -18,4 +18,6 @@
     <string name="vision_nothing">nothing</string>
     <string name="vision_text">I found this text:</string>
     <string name="vision_no_text">I found no text.</string>
+    <string name="volume_turned_off">The volume has been turned off.</string>
+    <string name="volume_increased">The volume has been increased.</string>
 </resources>

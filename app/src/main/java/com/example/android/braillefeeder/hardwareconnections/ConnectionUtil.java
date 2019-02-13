@@ -1,4 +1,4 @@
-package com.example.android.braillefeeder;
+package com.example.android.braillefeeder.hardwareconnections;
 
 import android.content.Context;
 import android.net.ConnectivityManager;
@@ -8,8 +8,6 @@ import android.net.NetworkInfo;
 public class ConnectionUtil {
     public static final int TYPE_WIFI = 1;
     public static final int TYPE_NOT_CONNECTED = 0;
-    public static final int NETWORK_STATUS_WIFI = 1;
-    public static final int NETWORK_STATUS_NOT_CONNECTED = 0;
 
     public static int getConnectivityStatus(Context context) {
         ConnectivityManager connectivityManager = (ConnectivityManager)

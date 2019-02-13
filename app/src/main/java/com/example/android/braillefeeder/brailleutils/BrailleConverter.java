@@ -24,7 +24,6 @@ public class BrailleConverter {
 
     public static List<String> convertFromWord(String text) {
         List<String> braille = new ArrayList<>();
-        Log.d("convertFromWord", text);
         for( int i = 0; i < text.length(); i++) {
             braille.add(Braille.fromKey(Character.toLowerCase(text.charAt(i))).getValue());
         }

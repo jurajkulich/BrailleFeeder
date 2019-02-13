@@ -1,6 +1,5 @@
-package com.example.android.braillefeeder;
+package com.example.android.braillefeeder.utils;
 
-import android.speech.tts.Voice;
 import android.util.Log;
 
 import com.example.android.braillefeeder.data.model.ArticleSettings;
@@ -24,7 +23,7 @@ public class VoiceControl {
         void onCommandNotFound();
         void onSaveArticleCommand();
         void onLoadSavedArticleCommand();
-        void onVolumeSettingCommand(float percent);
+        void onVolumeSettingCommand();
         void onVolumePercentSettingCommand(float percent);
     }
 
@@ -96,9 +95,9 @@ public class VoiceControl {
         }
         else if(commandList.contains("volume")) {
             if( commandList.contains("up")) {
-                mVoiceControlListener.onVolumeSettingCommand(0.20f);
+                mVoiceControlListener.onVolumeSettingCommand();
             } else if( commandList.contains("down")) {
-                mVoiceControlListener.onVolumeSettingCommand(-0.20f);
+                mVoiceControlListener.onVolumeSettingCommand();
             } else if( commandList.contains("to")) {
                 String percent = commandList.get(commandList.indexOf("to") + 1);
                 float per = Integer.parseInt(percent.substring(0, percent.length()-1));

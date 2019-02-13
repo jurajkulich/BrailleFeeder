@@ -1,4 +1,4 @@
-package com.example.android.braillefeeder;
+package com.example.android.braillefeeder.hardwareconnections;
 
 import android.content.Context;
 import android.graphics.ImageFormat;
@@ -145,25 +145,7 @@ public class CameraService {
             e.printStackTrace();
         }
     }
-    /*
-    private CameraCaptureSession.StateCallback mStateCallbackCaptureSession = new CameraCaptureSession.StateCallback() {
-        @Override
-        public void onConfigured(@NonNull CameraCaptureSession cameraCaptureSession) {
-            if( mCameraDevice == null) {
-                Log.e("mStateCallback", " mStateCallbackCaptureSession configured");
-                return;
-            }
-            Log.d("CameraService", "imageCapture()");
-            mCameraCaptureSession = cameraCaptureSession;
-            imageCapture();
-        }
 
-        @Override
-        public void onConfigureFailed(@NonNull CameraCaptureSession cameraCaptureSession) {
-            Log.e("mStateCallback", "Configure failed");
-        }
-    };
-    */
     private void imageCapture() {
         Log.d("CameraService", "imageCapture()");
         try {

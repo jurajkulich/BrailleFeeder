@@ -1,11 +1,9 @@
-package com.example.android.braillefeeder;
+package com.example.android.braillefeeder.hardwareconnections;
 
-import android.os.Handler;
 import android.util.Log;
 
 import com.google.android.things.contrib.driver.button.Button;
 import com.google.android.things.pio.Gpio;
-import com.google.android.things.pio.GpioCallback;
 import com.google.android.things.pio.PeripheralManager;
 
 import java.io.IOException;
@@ -24,8 +22,9 @@ public class PeripheralConnections {
     private List<Gpio> mSolenoids;
     private PeripheralManager peripheralManager;
 
-    PeripheralConnections(PeripheralManager peripheralManagerService) {
+    public PeripheralConnections(PeripheralManager peripheralManagerService) {
         this.peripheralManager = peripheralManagerService;
+        Log.d("PERIHPHERAl", "Available GPIO: " +this.peripheralManager.getGpioList());
         mSolenoids = new ArrayList<>();
     }
 

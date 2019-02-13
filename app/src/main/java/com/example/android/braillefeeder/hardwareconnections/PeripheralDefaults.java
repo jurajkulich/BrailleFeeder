@@ -1,17 +1,17 @@
-package com.example.android.braillefeeder;
+package com.example.android.braillefeeder.hardwareconnections;
 
 public class PeripheralDefaults {
-    // TODO - ADD CONSTANTS
+
     static String getFirstSolenoidGpioPin() {
-        return "GPIO6_IO14";
+        return "GPIO6_IO12";
     }
 
     static String getSecondSolenoidGpioPin() {
-        return "GPIO6_IO15";
+        return "GPIO1_IO10";
     }
 
     static String getThirdSolenoidGpioPin() {
-        return "GPIO2_IO07";
+        return "GPIO6_IO13";
     }
 
     static String getFourthSolenoidGpioPin() {
@@ -27,14 +27,14 @@ public class PeripheralDefaults {
     }
 
     static String getSwitchButtonGpioPin() {
-        return "GPIO02_IO03";
+        return "GPIO6_IO14";
     }
 
     static String getVolumeButtonGpioPin() {
-        return "GPIO01_IO10";
+        return "GPIO6_IO15";
     }
 
     static String getLengthButtonGpioPin() {
-        return "GPIO06_IO13";
+        return "GPIO2_IO07";
     }
 }

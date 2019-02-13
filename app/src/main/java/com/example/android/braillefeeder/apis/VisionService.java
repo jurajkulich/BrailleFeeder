@@ -31,7 +31,6 @@ import java.util.List;
 import java.util.Locale;
 
 import okhttp3.HttpUrl;
-import okhttp3.MultipartBody;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -103,11 +102,9 @@ public class VisionService {
     }
 
     private static class VisionTask extends AsyncTask<Object, Void, String> {
-//        private final WeakReference<MainActivity> mMainActivityWeakReference;
         private Vision.Images.Annotate mAnnotateRequest;
 
         VisionTask(Vision.Images.Annotate annotate) {
-//            mMainActivityWeakReference = new WeakReference<>(mainActivity);
             mAnnotateRequest = annotate;
         }
 
@@ -116,7 +113,7 @@ public class VisionService {
             try {
                 Log.d(TAG, "created Cloud Vision request object, sending request");
                 BatchAnnotateImagesResponse response = mAnnotateRequest.execute();
-                return convertResponseToString(response);
+                return getResponse(response);
 
             } catch (GoogleJsonResponseException e) {
                 Log.d(TAG, "failed to make API request because " + e.getContent());
@@ -129,10 +126,7 @@ public class VisionService {
 
         @Override
         protected void onPostExecute(String s) {
-//            MainActivity activity =mMainActivityWeakReference.get();
-//            if( activity != null && !activity.isFinishing()) {
                     mVisionServiceListener.onVisionCompleted(s);
-//            }
         }
     }
 
@@ -141,12 +135,11 @@ public class VisionService {
             AsyncTask<Object, Void, String> labelDetectionTask = new VisionTask(prepareAnnotationRequest(bitmap));
             labelDetectionTask.execute();
         } catch (IOException e) {
-            Log.d(TAG, "failed to make API request because of other IOException " +
-                    e.getMessage());
+            Log.d(TAG, "failed to make API request because of other IOException " + e.getMessage());
         }
     }
 
-    private static String convertResponseToString(BatchAnnotateImagesResponse response) {
+    private static String getResponse(BatchAnnotateImagesResponse response) {
         StringBuilder message = new StringBuilder(mContext.getString(R.string.vision_answer));
 
         List<EntityAnnotation> textAnnotations = response.getResponses().get(0).getTextAnnotations();
@@ -154,16 +147,14 @@ public class VisionService {
         if (labelAnnotations != null) {
             StringBuilder labels = new StringBuilder();
             for (EntityAnnotation label : labelAnnotations) {
-                // message.append(String.format(Locale.US, "%.3f: %s", label.getScore(), label.getDescription()));
-                labels.append(String.format(Locale.US, "%s", label.getDescription()));
-//                message.append(String.format(Locale.US, "%s", label.getDescription()));
+               labels.append(String.format(Locale.US, "%s", label.getDescription()));
                labels.append(",");
             }
             if( MainActivity.getLocale().equals("sk")) {
-                Log.d("VisionService", "translating labels: " + MainActivity.getLocale());
+//                Log.d("VisionService", "translating labels: " + MainActivity.getLocale());
                 message.append(translateLabels(labels.toString()));
             } else {
-                Log.d("VisionService", "translating labels: " + MainActivity.getLocale());
+//                Log.d("VisionService", "translating labels: " + MainActivity.getLocale());
                 message.append(labels.toString());
             }
         } else {
@@ -180,7 +171,6 @@ public class VisionService {
         } else {
             message.append(mContext.getString(R.string.vision_no_text));
         }
-
         return message.toString();
     }
 

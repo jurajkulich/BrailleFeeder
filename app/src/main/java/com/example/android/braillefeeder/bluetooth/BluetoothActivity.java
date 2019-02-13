@@ -1,6 +1,4 @@
-package com.example.android.braillefeeder;
-
-import androidx.appcompat.app.AppCompatActivity;
+package com.example.android.braillefeeder.bluetooth;
 
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
@@ -15,14 +13,14 @@ import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.os.Handler;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 
 import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
-import android.widget.Toast;
+
+import com.example.android.braillefeeder.MainActivity;
 
 public class BluetoothActivity extends Activity {
     private static final String TAG = MainActivity.class.getSimpleName();

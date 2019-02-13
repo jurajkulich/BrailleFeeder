@@ -29,6 +29,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.example.android.braillefeeder.apis.SpeechToText;
+import com.example.android.braillefeeder.apis.TextRead;
 import com.example.android.braillefeeder.apis.VisionService;
 import com.example.android.braillefeeder.brailleutils.BrailleConverter;
 import com.example.android.braillefeeder.data.ApiUtils;
@@ -36,7 +37,12 @@ import com.example.android.braillefeeder.data.model.ArticleList;
 import com.example.android.braillefeeder.data.dao.ArticleRoomDatabase;
 import com.example.android.braillefeeder.data.model.Article;
 import com.example.android.braillefeeder.data.model.ArticleSettings;
+import com.example.android.braillefeeder.hardwareconnections.CameraService;
+import com.example.android.braillefeeder.hardwareconnections.ConnectionUtil;
+import com.example.android.braillefeeder.hardwareconnections.PeripheralConnections;
+import com.example.android.braillefeeder.hardwareconnections.SpeechRecorder;
 import com.example.android.braillefeeder.remote.NewsService;
+import com.example.android.braillefeeder.utils.VoiceControl;
 import com.google.android.things.pio.PeripheralManager;
 
 import java.nio.ByteBuffer;
@@ -186,11 +192,37 @@ public class MainActivity extends Activity implements
         // ButterKnife binds all views to variables
         ButterKnife.bind(this);
 
-//        Intent intent = new Intent(this, BluetoothActivity.class);
-//        startActivity(intent);
-
         mPeripheralConnections = new PeripheralConnections(PeripheralManager.getInstance());
         mPeripheralConnections.openSolenoidsGpio();
+
+        mPeripheralConnections.openSwitchButtonsGpio(new com.google.android.things.contrib.driver.button.Button.OnButtonEventListener() {
+            @Override
+            public void onButtonEvent(com.google.android.things.contrib.driver.button.Button button, boolean pressed) {
+                if(pressed) {
+                    Log.d("button", "button pressed: " + pressed);
+                    changeArticle(1);
+                }
+            }
+        });
+
+        mPeripheralConnections.openVolumeButtonsGpio(new com.google.android.things.contrib.driver.button.Button.OnButtonEventListener() {
+            @Override
+            public void onButtonEvent(com.google.android.things.contrib.driver.button.Button button, boolean pressed) {
+                if(pressed) {
+                    Log.d("button", "button pressed: " + pressed);
+                    onVolumeSettingCommand();
+                }
+            }
+        });
+
+        mPeripheralConnections.openLengthButtonsGpio(new com.google.android.things.contrib.driver.button.Button.OnButtonEventListener() {
+            @Override
+            public void onButtonEvent(com.google.android.things.contrib.driver.button.Button button, boolean pressed) {
+                if(pressed) {
+                    Log.d("button", "button pressed: " + pressed);
+                }
+            }
+        });
 
         // setVolumeControlStream set default control stream to music, with
         // this setting we can change volume of speaking
@@ -221,6 +253,10 @@ public class MainActivity extends Activity implements
                 if( mTextRead != null) {
                     mTextRead.stopSpeaker();
                 }
+                if( brailleHandler != null) {
+                    brailleHandler.removeCallbacksAndMessages(null);
+
+                }
                 changeArticle(1);
             }
         });
@@ -237,6 +273,10 @@ public class MainActivity extends Activity implements
             public void onClick(View view) {
                 if( mTextRead != null) {
                     mTextRead.stopSpeaker();
+                }
+                if( brailleHandler != null) {
+                    brailleHandler.removeCallbacksAndMessages(null);
+
                 }
                 startVoiceRecorder();
             }
@@ -473,9 +513,17 @@ public class MainActivity extends Activity implements
     }
 
     @Override
-    public void onVolumeSettingCommand(float percent) {
-        //int per = mAudioMax
-        //mAudioManager.setStreamVolume(AudioManager.STREAM_MUSIC, );
+    public void onVolumeSettingCommand() {
+        float per = (mAudioMax/8);
+        float volume = mAudioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
+        if( volume + per > mAudioMax) {
+            mTextRead.speakText(getString(R.string.volume_turned_off));
+            mAudioManager.setStreamVolume(AudioManager.STREAM_MUSIC,  0, 0);
+        } else {
+            mAudioManager.setStreamVolume(AudioManager.STREAM_MUSIC,  (int)(volume + per), 0);
+            mTextRead.speakText(getString(R.string.volume_increased));
+        }
+
     }
 
     @Override
@@ -502,8 +550,8 @@ public class MainActivity extends Activity implements
                 Log.d("changeArticle", mArticlePosition + "");
                 mArticlePosition += pos;
                 Log.d("changeArticle", mArticlePosition + "");
-//                mTextRead.speakText(mArticleList.get(mArticlePosition));
-                showInBraille(mArticleList.get(mArticlePosition));
+                mTextRead.speakText(mArticleList.get(mArticlePosition));
+//                showInBraille(mArticleList.get(mArticlePosition));
                 mArticleTextView.setText(mArticleList.get(mArticlePosition).getDescription());
             }
         } else {
@@ -583,28 +631,23 @@ public class MainActivity extends Activity implements
 
     private void showInBraille(Article article) {
         final List<String> words = BrailleConverter.convertFromWords(article.getTitle(), article.getDescription());
+        words.add(0, ON_SOLENOID_STATE);
+        words.add(0, ON_SOLENOID_STATE);
         brailleHandler = new Handler();
         for( int i = 0; i < words.size(); i++) {
             final String word = words.get(i);
-//            brailleHandler.postDelayed(new Runnable() {
-//                @Override
-//                public void run() {
-//                    Log.d("configureGpio", word);
-//                    mPeripheralConnections.sendGpioValues(word);
-//                }
-//            }, DEFAULT_DELAY * i);
+            brailleHandler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    Log.d("configureGpio", word);
+                    mPeripheralConnections.sendGpioValues(word);
+                }
+            }, DEFAULT_DELAY * i);
         }
-    }
-
-    public void showSequence(String sequence) {
-        mPeripheralConnections.sendGpioValues(sequence);
+        resetSolenoids();
     }
 
     public void resetSolenoids() {
         mPeripheralConnections.sendGpioValues(OFF_SOLENOID_STATE);
-    }
-
-    public void prepareSolenoids() {
-        mPeripheralConnections.sendGpioValues(ON_SOLENOID_STATE);
     }
 }

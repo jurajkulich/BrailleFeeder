@@ -1,4 +1,4 @@
-package com.example.android.braillefeeder;
+package com.example.android.braillefeeder.bluetooth;
 
 import android.app.Service;
 import android.bluetooth.BluetoothAdapter;
