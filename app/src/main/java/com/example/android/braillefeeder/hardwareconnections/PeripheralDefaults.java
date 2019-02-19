@@ -19,7 +19,7 @@ public class PeripheralDefaults {
     }
 
     static String getFifthSolenoidGpioPin() {
-        return "GPIO2_IO00";
+        return "GPIO2_IO01";
     }
 
     static String getSixthSolenoidGpioPin() {

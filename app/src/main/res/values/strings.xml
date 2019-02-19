@@ -20,4 +20,7 @@
     <string name="vision_no_text">I found no text.</string>
     <string name="volume_turned_off">The volume has been turned off.</string>
     <string name="volume_increased">The volume has been increased.</string>
+    <string name="braillecell_active">I have turned on braille cell.</string>
+    <string name="braillecell_inactive">I have turned on voice output.</string>
+
 </resources>

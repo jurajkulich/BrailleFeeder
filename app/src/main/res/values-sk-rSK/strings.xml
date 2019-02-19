@@ -15,4 +15,6 @@
     <string name="vision_no_text">Nenašiel som žiadny text</string>
     <string name="volume_turned_off">Zvuk bol vypnutý.</string>
     <string name="volume_increased">Hlasitosť bola zvýšená.</string>
+    <string name="braillecell_active">Zapol som Braillovo písmeno.</string>
+    <string name="braillecell_inactive">Zapol som hlasový výstup.</string>
 </resources>

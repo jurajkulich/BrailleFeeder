@@ -77,7 +77,6 @@ public class MainActivity extends Activity implements
     private Handler brailleHandler = new Handler();
     private Runnable brailleRunnable;
 
-
     private static final String DATABASE = "articles_db";
     private ArticleRoomDatabase mArticleDatabase;
 
@@ -181,6 +180,7 @@ public class MainActivity extends Activity implements
     private static SharedPreferences mSharedPreferences;
     private String mLocale;
 
+    private boolean brailleActive = false;
     // current position from fetched articles
     private int mArticlePosition;
 
@@ -199,7 +199,14 @@ public class MainActivity extends Activity implements
             @Override
             public void onButtonEvent(com.google.android.things.contrib.driver.button.Button button, boolean pressed) {
                 if(pressed) {
-                    Log.d("button", "button pressed: " + pressed);
+                    if( mTextRead != null) {
+                        mTextRead.stopSpeaker();
+                    }
+                    if( brailleHandler != null) {
+                        brailleHandler.removeCallbacksAndMessages(null);
+
+                    }
+                    Log.d("Article button", "button pressed: " + button.toString() + pressed);
                     changeArticle(1);
                 }
             }
@@ -209,7 +216,7 @@ public class MainActivity extends Activity implements
             @Override
             public void onButtonEvent(com.google.android.things.contrib.driver.button.Button button, boolean pressed) {
                 if(pressed) {
-                    Log.d("button", "button pressed: " + pressed);
+                    Log.d("Volume button", "button pressed: " + pressed);
                     onVolumeSettingCommand();
                 }
             }
@@ -219,7 +226,15 @@ public class MainActivity extends Activity implements
             @Override
             public void onButtonEvent(com.google.android.things.contrib.driver.button.Button button, boolean pressed) {
                 if(pressed) {
-                    Log.d("button", "button pressed: " + pressed);
+                    if( mTextRead != null) {
+                        mTextRead.stopSpeaker();
+                    }
+                    if( brailleHandler != null) {
+                        brailleHandler.removeCallbacksAndMessages(null);
+
+                    }
+                    Log.d("Recorder button", "button pressed: " + pressed);
+                    startVoiceRecorder();
                 }
             }
         });
@@ -298,7 +313,7 @@ public class MainActivity extends Activity implements
 
         if (requestCode == PERMISSIONS_REQUEST_RECORD_AUDIO) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                startVoiceRecorder();
+//                startVoiceRecorder();
             } else {
                 finish();
             }
@@ -381,7 +396,7 @@ public class MainActivity extends Activity implements
                             @Override
                             public void run() {
                                 if (isFinal) {
-                                    Log.d("Main", text);
+                                    Log.d("Voice", text);
                                     mSpeechTextView.setText(text);
                                     VoiceControl.recognizeCommand(text);
                                 }
@@ -517,11 +532,11 @@ public class MainActivity extends Activity implements
         float per = (mAudioMax/8);
         float volume = mAudioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
         if( volume + per > mAudioMax) {
-            mTextRead.speakText(getString(R.string.volume_turned_off));
+//            mTextRead.speakText(getString(R.string.volume_turned_off));
             mAudioManager.setStreamVolume(AudioManager.STREAM_MUSIC,  0, 0);
         } else {
             mAudioManager.setStreamVolume(AudioManager.STREAM_MUSIC,  (int)(volume + per), 0);
-            mTextRead.speakText(getString(R.string.volume_increased));
+//            mTextRead.speakText(getString(R.string.volume_increased));
         }
 
     }
@@ -531,6 +546,16 @@ public class MainActivity extends Activity implements
         int per = (int) (mAudioMax*percent);
         mAudioManager.setStreamVolume(AudioManager.STREAM_MUSIC, per, 0);
         mTextRead.speakText(getString(R.string.volume_set_up) + per + " %.");
+    }
+
+    @Override
+    public void onBrailleActiveCommand(boolean active) {
+        if(active) {
+            mTextRead.speakText(getString(R.string.braillecell_active));
+        } else {
+            mTextRead.speakText(getString(R.string.braillecell_inactive));
+        }
+        brailleActive = active;
     }
 
 
@@ -547,11 +572,12 @@ public class MainActivity extends Activity implements
     public void changeArticle(int pos) {
         if( mArticleList != null) {
             if( (mArticlePosition + pos) < mArticleList.size() && (mArticlePosition + pos) >= 0) {
-                Log.d("changeArticle", mArticlePosition + "");
                 mArticlePosition += pos;
-                Log.d("changeArticle", mArticlePosition + "");
-                mTextRead.speakText(mArticleList.get(mArticlePosition));
-//                showInBraille(mArticleList.get(mArticlePosition));
+                if( !brailleActive) {
+                    mTextRead.speakText(mArticleList.get(mArticlePosition));
+                } else {
+                    showInBraille(mArticleList.get(mArticlePosition));
+                }
                 mArticleTextView.setText(mArticleList.get(mArticlePosition).getDescription());
             }
         } else {
@@ -633,6 +659,7 @@ public class MainActivity extends Activity implements
         final List<String> words = BrailleConverter.convertFromWords(article.getTitle(), article.getDescription());
         words.add(0, ON_SOLENOID_STATE);
         words.add(0, ON_SOLENOID_STATE);
+        words.add(OFF_SOLENOID_STATE);
         brailleHandler = new Handler();
         for( int i = 0; i < words.size(); i++) {
             final String word = words.get(i);

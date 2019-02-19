@@ -25,6 +25,7 @@ public class VoiceControl {
         void onLoadSavedArticleCommand();
         void onVolumeSettingCommand();
         void onVolumePercentSettingCommand(float percent);
+        void onBrailleActiveCommand(boolean active);
     }
 
     private static VoiceControlListener mVoiceControlListener;
@@ -87,6 +88,15 @@ public class VoiceControl {
         else if(commandList.contains("save") && commandList.contains("article")) {
             mVoiceControlListener.onSaveArticleCommand();
             Log.d(TAG, "SaveArticle");
+        }
+        else if(commandList.contains("braille")) {
+            if (commandList.contains("on") || commandList.contains("active")) {
+                mVoiceControlListener.onBrailleActiveCommand(true);
+            } else if( commandList.contains("off")) {
+                mVoiceControlListener.onBrailleActiveCommand(false);
+            } else {
+                mVoiceControlListener.onCommandNotFound();
+            }
         }
         else if((commandList.contains("show") ||commandList.contains("load"))
                 && commandList.contains("saved") && commandList.contains("articles")) {
