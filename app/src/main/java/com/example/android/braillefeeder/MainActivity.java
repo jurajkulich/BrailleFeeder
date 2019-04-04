@@ -46,6 +46,8 @@ import com.example.android.braillefeeder.utils.VoiceControl;
 import com.google.android.things.pio.PeripheralManager;
 
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -70,7 +72,7 @@ public class MainActivity extends Activity implements
     private static final int PERMISSION_REQUEST_BLUETOOTH = 3;
     private static final int PERMISSION_REQUEST_LOCATION = 4;
 
-    private static final int DEFAULT_DELAY = 1000;
+    private static int DEFAULT_DELAY = 400;
     private static final String OFF_SOLENOID_STATE = "000000";
     private static final String ON_SOLENOID_STATE = "111111";
 
@@ -232,6 +234,9 @@ public class MainActivity extends Activity implements
                     if( brailleHandler != null) {
                         brailleHandler.removeCallbacksAndMessages(null);
 
+                    }
+                    if( mPeripheralConnections != null && brailleActive) {
+                        mPeripheralConnections.sendGpioValues("000000");
                     }
                     Log.d("Recorder button", "button pressed: " + pressed);
                     startVoiceRecorder();
@@ -450,7 +455,7 @@ public class MainActivity extends Activity implements
             apiMap.put("country", "us");
         }
         apiMap.put("apiKey", API_KEY_NEWS);
-        apiMap.put("pageSize", Integer.toString(20));
+        apiMap.put("pageSize", Integer.toString(60));
     }
 
     @Override
@@ -529,16 +534,23 @@ public class MainActivity extends Activity implements
 
     @Override
     public void onVolumeSettingCommand() {
-        float per = (mAudioMax/8);
-        float volume = mAudioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
-        if( volume + per > mAudioMax) {
-//            mTextRead.speakText(getString(R.string.volume_turned_off));
-            mAudioManager.setStreamVolume(AudioManager.STREAM_MUSIC,  0, 0);
+        if(!brailleActive) {
+            float per = (mAudioMax / 8);
+            float volume = mAudioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
+            if (volume + per > mAudioMax) {
+                mAudioManager.setStreamVolume(AudioManager.STREAM_MUSIC, 0, 0);
+            } else {
+                mAudioManager.setStreamVolume(AudioManager.STREAM_MUSIC, (int) (volume + per), 0);
+            }
         } else {
-            mAudioManager.setStreamVolume(AudioManager.STREAM_MUSIC,  (int)(volume + per), 0);
-//            mTextRead.speakText(getString(R.string.volume_increased));
+            if( DEFAULT_DELAY == 400) {
+                DEFAULT_DELAY = 600;
+            } else if ( DEFAULT_DELAY == 600) {
+                DEFAULT_DELAY = 800;
+            } else {
+                DEFAULT_DELAY = 400;
+            }
         }
-
     }
 
     @Override
@@ -657,6 +669,8 @@ public class MainActivity extends Activity implements
 
     private void showInBraille(Article article) {
         final List<String> words = BrailleConverter.convertFromWords(article.getTitle(), article.getDescription());
+//        final List<String> words =  new ArrayList<String>(Arrays.asList("111111", "111111", "111111", "111111", "111111", "111111"
+//        ,"111111", "111111", "111111", "111111", "111111", "111111", "111111", "111111", "111111", "111111"));
         words.add(0, ON_SOLENOID_STATE);
         words.add(0, ON_SOLENOID_STATE);
         words.add(OFF_SOLENOID_STATE);
