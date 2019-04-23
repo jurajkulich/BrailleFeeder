@@ -73,8 +73,8 @@ public class MainActivity extends Activity implements
     private static final int PERMISSION_REQUEST_LOCATION = 4;
 
     private static int DEFAULT_DELAY = 400;
-    private static final String OFF_SOLENOID_STATE = "000000";
-    private static final String ON_SOLENOID_STATE = "111111";
+    private static final String OFF_SOLENOID_STATE = "111111";
+    private static final String ON_SOLENOID_STATE = "000000";
 
     private Handler brailleHandler = new Handler();
     private Runnable brailleRunnable;
@@ -236,7 +236,7 @@ public class MainActivity extends Activity implements
 
                     }
                     if( mPeripheralConnections != null && brailleActive) {
-                        mPeripheralConnections.sendGpioValues("000000");
+                        mPeripheralConnections.sendGpioValues(OFF_SOLENOID_STATE);
                     }
                     Log.d("Recorder button", "button pressed: " + pressed);
                     startVoiceRecorder();
@@ -393,7 +393,9 @@ public class MainActivity extends Activity implements
                 @Override
                 public void onSpeechRecognized(final String text, final boolean isFinal) {
                     if (isFinal) {
-                        mSpeechRecorder.dismiss();
+                        if( mSpeechRecorder != null) {
+                            mSpeechRecorder.dismiss();
+                        }
                         Log.d("SpeechToTextListener", "isFinal");
                     }
                     if (text != null && !TextUtils.isEmpty(text)) {
@@ -533,6 +535,11 @@ public class MainActivity extends Activity implements
     }
 
     @Override
+    public void onLoadArticleCommand() {
+        loadAnswers();
+    }
+
+    @Override
     public void onVolumeSettingCommand() {
         if(!brailleActive) {
             float per = (mAudioMax / 8);
@@ -669,9 +676,7 @@ public class MainActivity extends Activity implements
 
     private void showInBraille(Article article) {
         final List<String> words = BrailleConverter.convertFromWords(article.getTitle(), article.getDescription());
-//        final List<String> words =  new ArrayList<String>(Arrays.asList("111111", "111111", "111111", "111111", "111111", "111111"
-//        ,"111111", "111111", "111111", "111111", "111111", "111111", "111111", "111111", "111111", "111111"));
-        words.add(0, ON_SOLENOID_STATE);
+//        final List<String> words = BrailleConverter.convertFromWords("abcdefghij");
         words.add(0, ON_SOLENOID_STATE);
         words.add(OFF_SOLENOID_STATE);
         brailleHandler = new Handler();

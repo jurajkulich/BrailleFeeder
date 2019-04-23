@@ -104,6 +104,7 @@ public class PeripheralConnections {
 
     void shiftOut(String sequence) {
         Log.d("TAG", sequence);
+
         try {
             for (int i = 0; i < 8; i++) {
                 if( i < 2) {
@@ -111,7 +112,7 @@ public class PeripheralConnections {
                     clockPin.setValue(false);
                 } else {
                     clockPin.setValue(false);
-                    dataPin.setValue((sequence.charAt(i-2) - '0') == 1);
+                    dataPin.setValue(!((sequence.charAt(i-2) - '0') == 1));
                     clockPin.setValue(true);
                 }
             }
