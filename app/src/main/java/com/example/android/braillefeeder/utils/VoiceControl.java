@@ -23,6 +23,7 @@ public class VoiceControl {
         void onCommandNotFound();
         void onSaveArticleCommand();
         void onLoadSavedArticleCommand();
+        void onLoadArticleCommand();
         void onVolumeSettingCommand();
         void onVolumePercentSettingCommand(float percent);
         void onBrailleActiveCommand(boolean active);
@@ -81,7 +82,7 @@ public class VoiceControl {
             mVoiceControlListener.onRecognizeCommand(articleSettings);
             Log.d(TAG, articleSettings.getLanguage());
         }
-        else if(commandList.contains("take") && commandList.contains("photo")) {
+        else if(commandList.contains("take") && (commandList.contains("photo") || commandList.contains("picture"))) {
             mVoiceControlListener.onTakePhotoCommand();
             Log.d(TAG, "TakePhoto");
         }
@@ -90,9 +91,9 @@ public class VoiceControl {
             Log.d(TAG, "SaveArticle");
         }
         else if(commandList.contains("braille")) {
-            if (commandList.contains("on") || commandList.contains("active")) {
+            if (commandList.contains("on") || commandList.contains("active") || commandList.contains("enable")) {
                 mVoiceControlListener.onBrailleActiveCommand(true);
-            } else if( commandList.contains("off")) {
+            } else if( commandList.contains("off") || commandList.contains("disable")) {
                 mVoiceControlListener.onBrailleActiveCommand(false);
             } else {
                 mVoiceControlListener.onCommandNotFound();
@@ -101,6 +102,11 @@ public class VoiceControl {
         else if((commandList.contains("show") ||commandList.contains("load"))
                 && commandList.contains("saved") && commandList.contains("articles")) {
             mVoiceControlListener.onLoadSavedArticleCommand();
+            Log.d(TAG, "onLoadSavedArticles");
+        }
+        else if((commandList.contains("show") ||commandList.contains("load"))
+                &&  commandList.contains("articles")) {
+            mVoiceControlListener.onLoadArticleCommand();
             Log.d(TAG, "onLoadSavedArticles");
         }
         else if(commandList.contains("volume")) {

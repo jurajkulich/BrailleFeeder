@@ -19,13 +19,29 @@ import static com.google.android.things.pio.Gpio.DIRECTION_OUT_INITIALLY_LOW;
 
 public class PeripheralConnections {
 
-    private List<Gpio> mSolenoids;
+    private Gpio latchPin;
+    private Gpio clockPin;
+    private Gpio dataPin;
+
     private PeripheralManager peripheralManager;
 
     public PeripheralConnections(PeripheralManager peripheralManagerService) {
         this.peripheralManager = peripheralManagerService;
         Log.d("PERIHPHERAl", "Available GPIO: " +this.peripheralManager.getGpioList());
-        mSolenoids = new ArrayList<>();
+        try {
+            latchPin = peripheralManager.openGpio(PeripheralDefaults.getLatchGpioPin());
+            latchPin.setDirection(DIRECTION_OUT_INITIALLY_LOW);
+            clockPin = peripheralManager.openGpio(PeripheralDefaults.getClockGpioPin());
+            clockPin.setDirection(DIRECTION_OUT_INITIALLY_LOW);
+            dataPin = peripheralManager.openGpio(PeripheralDefaults.getDataGpioPin());
+            dataPin.setDirection(DIRECTION_OUT_INITIALLY_LOW);
+
+            latchPin.setValue(false);
+            clockPin.setValue(false);
+            dataPin.setValue(false);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public void openSwitchButtonsGpio(Button.OnButtonEventListener buttonEventListener) {
@@ -59,12 +75,7 @@ public class PeripheralConnections {
     }
 
     public void openSolenoidsGpio() {
-        mSolenoids.add(configureGpioPin(PeripheralDefaults.getFirstSolenoidGpioPin()));
-        mSolenoids.add(configureGpioPin(PeripheralDefaults.getSecondSolenoidGpioPin()));
-        mSolenoids.add(configureGpioPin(PeripheralDefaults.getThirdSolenoidGpioPin()));
-        mSolenoids.add(configureGpioPin(PeripheralDefaults.getFourthSolenoidGpioPin()));
-        mSolenoids.add(configureGpioPin(PeripheralDefaults.getFifthSolenoidGpioPin()));
-        mSolenoids.add(configureGpioPin(PeripheralDefaults.getSixthSolenoidGpioPin()));
+
     }
 
     private Gpio configureGpioPin(String pin) {
@@ -81,12 +92,32 @@ public class PeripheralConnections {
 
     public void sendGpioValues(String sequence) {
         Log.d("sendGpio", sequence);
-        for (int i = 0; i < mSolenoids.size(); i++) {
-            try {
-                mSolenoids.get(i).setValue((int) sequence.charAt(i) == '1');
-            } catch (IOException error) {
-                Log.e(error.getMessage(), "There was an error configuring GPIO pins");
+        try {
+            latchPin.setValue(false);
+            shiftOut(sequence);
+            latchPin.setValue(true);
+        } catch (IOException o) {
+            o.printStackTrace();
+        }
+
+    }
+
+    void shiftOut(String sequence) {
+        Log.d("TAG", sequence);
+
+        try {
+            for (int i = 0; i < 8; i++) {
+                if( i < 2) {
+                    clockPin.setValue(true);
+                    clockPin.setValue(false);
+                } else {
+                    clockPin.setValue(false);
+                    dataPin.setValue(!((sequence.charAt(i-2) - '0') == 1));
+                    clockPin.setValue(true);
+                }
             }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 }

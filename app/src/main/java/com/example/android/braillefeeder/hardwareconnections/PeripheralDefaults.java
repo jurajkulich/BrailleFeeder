@@ -2,6 +2,16 @@ package com.example.android.braillefeeder.hardwareconnections;
 
 public class PeripheralDefaults {
 
+    static String getClockGpioPin() {
+        return "GPIO2_IO01";
+    }
+    static String getLatchGpioPin() {
+        return "GPIO6_IO12";
+    }
+    static String getDataGpioPin() {
+        return "GPIO6_IO13";
+    }
+
     static String getFirstSolenoidGpioPin() {
         return "GPIO6_IO12";
     }
